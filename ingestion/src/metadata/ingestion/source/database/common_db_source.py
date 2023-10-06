@@ -39,9 +39,6 @@ from metadata.generated.schema.entity.data.table import (
     TablePartition,
     TableType,
 )
-from metadata.generated.schema.entity.services.connections.metadata.openMetadataConnection import (
-    OpenMetadataConnection,
-)
 from metadata.generated.schema.metadataIngestion.databaseServiceMetadataPipeline import (
     DatabaseServiceMetadataPipeline,
 )
@@ -90,15 +87,14 @@ class CommonDbSourceService(
     def __init__(
         self,
         config: WorkflowSource,
-        metadata_config: OpenMetadataConnection,
+        metadata: OpenMetadata,
     ):
         self.config = config
         self.source_config: DatabaseServiceMetadataPipeline = (
             self.config.sourceConfig.config
         )
 
-        self.metadata_config = metadata_config
-        self.metadata = OpenMetadata(self.metadata_config)
+        self.metadata = metadata
 
         # It will be one of the Unions. We don't know the specific type here.
         self.service_connection = self.config.serviceConnection.__root__.config
@@ -254,8 +250,8 @@ class CommonDbSourceService(
 
         :return: tables or views, depending on config
         """
+        schema_name = self.context.database_schema.name.__root__
         try:
-            schema_name = self.context.database_schema.name.__root__
             if self.source_config.includeTables:
                 for table_and_type in self.query_table_names_and_types(schema_name):
                     table_name = self.standardize_table_name(
@@ -568,13 +564,6 @@ class CommonDbSourceService(
         Returning `table` is just the default implementation.
         """
         return table
-
-    def yield_table_tag(self) -> Iterable[Either[OMetaTagAndClassification]]:
-        """
-        We don't provide a common implementation for table tags.
-
-        Each source will have to implement its own on a need basis.
-        """
 
     def get_source_url(
         self,

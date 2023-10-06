@@ -12,15 +12,15 @@
  */
 
 import { act, render, screen } from '@testing-library/react';
-import { ENTITY_PERMISSIONS } from 'mocks/Permissions.mock';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
+import { ENTITY_PERMISSIONS } from '../../mocks/Permissions.mock';
 import EntityVersionPage from './EntityVersionPage.component';
 
 let mockParams = {
   entityType: 'table',
   version: '0.1',
-  entityFQN: 'bigquery_gcp.shopify.raw_product_catalog',
+  fqn: 'bigquery_gcp.shopify.raw_product_catalog',
 };
 
 jest.mock('react-router-dom', () => ({
@@ -28,67 +28,76 @@ jest.mock('react-router-dom', () => ({
   useParams: jest.fn().mockImplementation(() => mockParams),
 }));
 
-jest.mock('components/TableVersion/TableVersion.component', () => {
+jest.mock('../../components/TableVersion/TableVersion.component', () => {
   return jest.fn().mockReturnValue(<div>TableVersion component</div>);
 });
-jest.mock('components/DashboardVersion/DashboardVersion.component', () => {
-  return jest.fn().mockReturnValue(<div>DashboardVersion component</div>);
-});
-jest.mock('components/PipelineVersion/PipelineVersion.component', () => {
+jest.mock(
+  '../../components/DashboardVersion/DashboardVersion.component',
+  () => {
+    return jest.fn().mockReturnValue(<div>DashboardVersion component</div>);
+  }
+);
+jest.mock('../../components/PipelineVersion/PipelineVersion.component', () => {
   return jest.fn().mockReturnValue(<div>PipelineVersion component</div>);
 });
-jest.mock('components/TopicVersion/TopicVersion.component', () => {
+jest.mock('../../components/TopicVersion/TopicVersion.component', () => {
   return jest.fn().mockReturnValue(<div>TopicVersion component</div>);
 });
-jest.mock('components/MlModelVersion/MlModelVersion.component', () => {
+jest.mock('../../components/MlModelVersion/MlModelVersion.component', () => {
   return jest.fn().mockReturnValue(<div>MlModelVersion component</div>);
 });
-jest.mock('components/ContainerVersion/ContainerVersion.component', () => {
-  return jest.fn().mockReturnValue(<div>ContainerVersion component</div>);
-});
+jest.mock(
+  '../../components/ContainerVersion/ContainerVersion.component',
+  () => {
+    return jest.fn().mockReturnValue(<div>ContainerVersion component</div>);
+  }
+);
 
-jest.mock('components/DataModelVersion/DataModelVersion.component', () => {
-  return jest.fn().mockReturnValue(<div>DataModelVersion component</div>);
-});
+jest.mock(
+  '../../components/DataModelVersion/DataModelVersion.component',
+  () => {
+    return jest.fn().mockReturnValue(<div>DataModelVersion component</div>);
+  }
+);
 
-jest.mock('rest/dashboardAPI', () => ({
+jest.mock('../../rest/dashboardAPI', () => ({
   getDashboardByFqn: jest.fn().mockImplementation(() => Promise.resolve({})),
   getDashboardVersion: jest.fn().mockImplementation(() => Promise.resolve({})),
   getDashboardVersions: jest.fn().mockImplementation(() => Promise.resolve({})),
 }));
-jest.mock('rest/pipelineAPI', () => ({
+jest.mock('../../rest/pipelineAPI', () => ({
   getPipelineByFqn: jest.fn().mockImplementation(() => Promise.resolve({})),
   getPipelineVersion: jest.fn().mockImplementation(() => Promise.resolve({})),
   getPipelineVersions: jest.fn().mockImplementation(() => Promise.resolve({})),
 }));
-jest.mock('rest/tableAPI', () => ({
+jest.mock('../../rest/tableAPI', () => ({
   getTableDetailsByFQN: jest.fn().mockImplementation(() => Promise.resolve({})),
   getTableVersion: jest.fn().mockImplementation(() => Promise.resolve({})),
   getTableVersions: jest.fn().mockImplementation(() => Promise.resolve({})),
 }));
-jest.mock('rest/topicsAPI', () => ({
+jest.mock('../../rest/topicsAPI', () => ({
   getTopicByFqn: jest.fn().mockImplementation(() => Promise.resolve({})),
   getTopicVersion: jest.fn().mockImplementation(() => Promise.resolve({})),
   getTopicVersions: jest.fn().mockImplementation(() => Promise.resolve({})),
 }));
 
-jest.mock('rest/mlModelAPI', () => ({
+jest.mock('../../rest/mlModelAPI', () => ({
   getMlModelByFQN: jest.fn().mockImplementation(() => Promise.resolve({})),
   getMlModelVersion: jest.fn().mockImplementation(() => Promise.resolve({})),
   getMlModelVersions: jest.fn().mockImplementation(() => Promise.resolve({})),
 }));
 
-jest.mock('rest/storageAPI', () => ({
+jest.mock('../../rest/storageAPI', () => ({
   getContainerByName: jest.fn().mockImplementation(() => Promise.resolve({})),
   getContainerVersion: jest.fn().mockImplementation(() => Promise.resolve({})),
   getContainerVersions: jest.fn().mockImplementation(() => Promise.resolve({})),
 }));
 
-jest.mock('components/containers/PageLayoutV1', () =>
+jest.mock('../../components/containers/PageLayoutV1', () =>
   jest.fn().mockImplementation(({ children }) => <div>{children}</div>)
 );
 
-jest.mock('rest/dataModelsAPI', () => ({
+jest.mock('../../rest/dataModelsAPI', () => ({
   getDataModelDetailsByFQN: jest
     .fn()
     .mockImplementation(() => Promise.resolve({})),
@@ -98,7 +107,7 @@ jest.mock('rest/dataModelsAPI', () => ({
     .mockImplementation(() => Promise.resolve({})),
 }));
 
-jest.mock('components/PermissionProvider/PermissionProvider', () => ({
+jest.mock('../../components/PermissionProvider/PermissionProvider', () => ({
   usePermissionProvider: jest.fn().mockImplementation(() => ({
     getEntityPermissionByFqn: jest
       .fn()
@@ -123,7 +132,7 @@ describe('Test EntityVersionPage component', () => {
     mockParams = {
       entityType: 'dashboard',
       version: '0.2',
-      entityFQN: 'sample_superset.forecast_sales_performance',
+      fqn: 'sample_superset.forecast_sales_performance',
     };
 
     await act(async () => {
@@ -143,7 +152,7 @@ describe('Test EntityVersionPage component', () => {
     mockParams = {
       entityType: 'pipeline',
       version: '0.1',
-      entityFQN: 'sample_airflow.snowflake_etl',
+      fqn: 'sample_airflow.snowflake_etl',
     };
 
     await act(async () => {
@@ -163,7 +172,7 @@ describe('Test EntityVersionPage component', () => {
     mockParams = {
       entityType: 'topic',
       version: '0.1',
-      entityFQN: 'sample_kafka.sales',
+      fqn: 'sample_kafka.sales',
     };
 
     await act(async () => {
@@ -181,7 +190,7 @@ describe('Test EntityVersionPage component', () => {
     mockParams = {
       entityType: 'mlmodel',
       version: '0.1',
-      entityFQN: 'mlflow_svc.eta_predictions',
+      fqn: 'mlflow_svc.eta_predictions',
     };
 
     await act(async () => {
@@ -199,7 +208,7 @@ describe('Test EntityVersionPage component', () => {
     mockParams = {
       entityType: 'container',
       version: '0.1',
-      entityFQN: 's3_storage_sample.transactions',
+      fqn: 's3_storage_sample.transactions',
     };
 
     await act(async () => {
@@ -219,7 +228,7 @@ describe('Test EntityVersionPage component', () => {
     mockParams = {
       entityType: 'dashboardDataModel',
       version: '0.1',
-      entityFQN: 'data_model.sales',
+      fqn: 'data_model.sales',
     };
 
     await act(async () => {

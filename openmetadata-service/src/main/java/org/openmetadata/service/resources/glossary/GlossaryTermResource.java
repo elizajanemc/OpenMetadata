@@ -56,7 +56,6 @@ import org.openmetadata.schema.type.Include;
 import org.openmetadata.schema.type.MetadataOperation;
 import org.openmetadata.service.Entity;
 import org.openmetadata.service.exception.CatalogExceptionMessage;
-import org.openmetadata.service.jdbi3.CollectionDAO;
 import org.openmetadata.service.jdbi3.GlossaryTermRepository;
 import org.openmetadata.service.jdbi3.ListFilter;
 import org.openmetadata.service.resources.Collection;
@@ -73,7 +72,7 @@ import org.openmetadata.service.util.ResultList;
 @Collection(name = "glossaryTerms", order = 7) // Initialized after Glossary, Classification, and Tags
 public class GlossaryTermResource extends EntityResource<GlossaryTerm, GlossaryTermRepository> {
   public static final String COLLECTION_PATH = "v1/glossaryTerms/";
-  static final String FIELDS = "children,relatedTerms,reviewers,owner,tags,usageCount,domain";
+  static final String FIELDS = "children,relatedTerms,reviewers,owner,tags,usageCount,domain,extension";
 
   @Override
   public GlossaryTerm addHref(UriInfo uriInfo, GlossaryTerm term) {
@@ -84,8 +83,8 @@ public class GlossaryTermResource extends EntityResource<GlossaryTerm, GlossaryT
     return term;
   }
 
-  public GlossaryTermResource(CollectionDAO dao, Authorizer authorizer) {
-    super(GlossaryTerm.class, new GlossaryTermRepository(dao), authorizer);
+  public GlossaryTermResource(Authorizer authorizer) {
+    super(Entity.GLOSSARY_TERM, authorizer);
   }
 
   @Override
@@ -444,6 +443,7 @@ public class GlossaryTermResource extends EntityResource<GlossaryTerm, GlossaryT
   private GlossaryTerm getGlossaryTerm(CreateGlossaryTerm create, String user) {
     return copy(new GlossaryTerm(), create, user)
         .withSynonyms(create.getSynonyms())
+        .withStyle(create.getStyle())
         .withGlossary(getEntityReference(Entity.GLOSSARY, create.getGlossary()))
         .withParent(getEntityReference(Entity.GLOSSARY_TERM, create.getParent()))
         .withRelatedTerms(getEntityReferences(Entity.GLOSSARY_TERM, create.getRelatedTerms()))

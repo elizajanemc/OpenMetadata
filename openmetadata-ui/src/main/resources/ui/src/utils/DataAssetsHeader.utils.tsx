@@ -12,42 +12,44 @@
  *  limitations under the License.
  */
 
-import {
-  ExtraInfoLabel,
-  ExtraInfoLink,
-} from 'components/DataAssets/DataAssetsHeader/DataAssetsHeader.component';
-import {
-  DataAssetHeaderInfo,
-  DataAssetsHeaderProps,
-} from 'components/DataAssets/DataAssetsHeader/DataAssetsHeader.interface';
-import {
-  getDashboardDetailsPath,
-  NO_DATA_PLACEHOLDER,
-} from 'constants/constants';
-import { EntityType } from 'enums/entity.enum';
-import { Container } from 'generated/entity/data/container';
-import { Dashboard } from 'generated/entity/data/dashboard';
-import { DashboardDataModel } from 'generated/entity/data/dashboardDataModel';
-import { Database } from 'generated/entity/data/database';
-import { DatabaseSchema } from 'generated/entity/data/databaseSchema';
-import { Mlmodel } from 'generated/entity/data/mlmodel';
-import { Pipeline } from 'generated/entity/data/pipeline';
-import {
-  StoredProcedure,
-  StoredProcedureCodeObject,
-} from 'generated/entity/data/storedProcedure';
-import { Table } from 'generated/entity/data/table';
-import { Topic } from 'generated/entity/data/topic';
-import { DashboardService } from 'generated/entity/services/dashboardService';
-import { DatabaseService } from 'generated/entity/services/databaseService';
-import { MessagingService } from 'generated/entity/services/messagingService';
-import { MetadataService } from 'generated/entity/services/metadataService';
-import { MlmodelService } from 'generated/entity/services/mlmodelService';
-import { PipelineService } from 'generated/entity/services/pipelineService';
-import { StorageService } from 'generated/entity/services/storageService';
 import { t } from 'i18next';
 import { isObject, isUndefined } from 'lodash';
 import React from 'react';
+import {
+  ExtraInfoLabel,
+  ExtraInfoLink,
+} from '../components/DataAssets/DataAssetsHeader/DataAssetsHeader.component';
+import {
+  DataAssetHeaderInfo,
+  DataAssetsHeaderProps,
+} from '../components/DataAssets/DataAssetsHeader/DataAssetsHeader.interface';
+import {
+  getDashboardDetailsPath,
+  NO_DATA_PLACEHOLDER,
+} from '../constants/constants';
+import { EntityType } from '../enums/entity.enum';
+import { Container } from '../generated/entity/data/container';
+import { Dashboard } from '../generated/entity/data/dashboard';
+import { DashboardDataModel } from '../generated/entity/data/dashboardDataModel';
+import { Database } from '../generated/entity/data/database';
+import { DatabaseSchema } from '../generated/entity/data/databaseSchema';
+import { Mlmodel } from '../generated/entity/data/mlmodel';
+import { Pipeline } from '../generated/entity/data/pipeline';
+import { SearchIndex } from '../generated/entity/data/searchIndex';
+import {
+  StoredProcedure,
+  StoredProcedureCodeObject,
+} from '../generated/entity/data/storedProcedure';
+import { Table } from '../generated/entity/data/table';
+import { Topic } from '../generated/entity/data/topic';
+import { DashboardService } from '../generated/entity/services/dashboardService';
+import { DatabaseService } from '../generated/entity/services/databaseService';
+import { MessagingService } from '../generated/entity/services/messagingService';
+import { MetadataService } from '../generated/entity/services/metadataService';
+import { MlmodelService } from '../generated/entity/services/mlmodelService';
+import { PipelineService } from '../generated/entity/services/pipelineService';
+import { SearchService } from '../generated/entity/services/searchService';
+import { StorageService } from '../generated/entity/services/storageService';
 import {
   getBreadcrumbForContainer,
   getBreadcrumbForEntitiesWithServiceOnly,
@@ -118,6 +120,15 @@ export const getDataAssetsHeaderInfo = (
               value={dashboardDetails.project}
             />
           )}
+          {dashboardDetails?.usageSummary && (
+            <ExtraInfoLabel
+              label={t('label.usage')}
+              value={getUsagePercentile(
+                dashboardDetails.usageSummary?.weeklyStats?.percentileRank || 0,
+                false
+              )}
+            />
+          )}
         </>
       );
 
@@ -175,6 +186,15 @@ export const getDataAssetsHeaderInfo = (
               )}
               label={t('label.dashboard')}
               value={entityName}
+            />
+          )}
+          {mlModelDetail?.usageSummary && (
+            <ExtraInfoLabel
+              label={t('label.usage')}
+              value={getUsagePercentile(
+                mlModelDetail.usageSummary?.weeklyStats?.percentileRank || 0,
+                false
+              )}
             />
           )}
         </>
@@ -331,6 +351,22 @@ export const getDataAssetsHeaderInfo = (
 
       break;
 
+    case EntityType.SEARCH_INDEX:
+      const searchIndexDetails = dataAsset as SearchIndex;
+      returnData.breadcrumbs =
+        getBreadcrumbForEntitiesWithServiceOnly(searchIndexDetails);
+
+      break;
+
+    case EntityType.SEARCH_SERVICE:
+      const searchServiceDetails = dataAsset as SearchService;
+
+      returnData.breadcrumbs = getEntityBreadcrumbs(
+        searchServiceDetails,
+        EntityType.SEARCH_SERVICE
+      );
+
+      break;
     case EntityType.STORED_PROCEDURE:
       const storedProcedureDetails = dataAsset as StoredProcedure;
 

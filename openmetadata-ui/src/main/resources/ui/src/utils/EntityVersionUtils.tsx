@@ -12,11 +12,6 @@
  */
 
 import { Space, Typography } from 'antd';
-import { ReactComponent as IconTeamsGrey } from 'assets/svg/teams-grey.svg';
-import { EntityDetails } from 'components/common/CustomPropertyTable/CustomPropertyTable.interface';
-import ProfilePicture from 'components/common/ProfilePicture/ProfilePicture';
-import { FQN_SEPARATOR_CHAR } from 'constants/char.constants';
-import { getTeamAndUserDetailsPath, getUserPath } from 'constants/constants';
 import {
   ArrayChange,
   Change,
@@ -24,15 +19,7 @@ import {
   diffWords,
   diffWordsWithSpace,
 } from 'diff';
-import { EntityType } from 'enums/entity.enum';
-import { Column as DataModelColumn } from 'generated/entity/data/dashboardDataModel';
-import { Field } from 'generated/entity/data/topic';
-import { EntityReference } from 'generated/entity/type';
 import { t } from 'i18next';
-import {
-  EntityDiffProps,
-  EntityDiffWithMultiChanges,
-} from 'interface/EntityVersion.interface';
 import {
   cloneDeep,
   isEmpty,
@@ -45,14 +32,31 @@ import {
 import React, { Fragment, ReactNode } from 'react';
 import ReactDOMServer from 'react-dom/server';
 import { Link } from 'react-router-dom';
+import { ReactComponent as IconTeamsGrey } from '../assets/svg/teams-grey.svg';
+import {
+  ExtentionEntities,
+  ExtentionEntitiesKeys,
+} from '../components/common/CustomPropertyTable/CustomPropertyTable.interface';
+import ProfilePicture from '../components/common/ProfilePicture/ProfilePicture';
+import { FQN_SEPARATOR_CHAR } from '../constants/char.constants';
+import { getTeamAndUserDetailsPath, getUserPath } from '../constants/constants';
 import { EntityField } from '../constants/Feeds.constants';
+import { EntityType } from '../enums/entity.enum';
 import { Column as ContainerColumn } from '../generated/entity/data/container';
+import { Column as DataModelColumn } from '../generated/entity/data/dashboardDataModel';
 import { Column as TableColumn } from '../generated/entity/data/table';
+import { Field } from '../generated/entity/data/topic';
 import {
   ChangeDescription,
   FieldChange,
 } from '../generated/entity/services/databaseService';
+import { MetadataService } from '../generated/entity/services/metadataService';
+import { EntityReference } from '../generated/entity/type';
 import { TagLabel } from '../generated/type/tagLabel';
+import {
+  EntityDiffProps,
+  EntityDiffWithMultiChanges,
+} from '../interface/EntityVersion.interface';
 import { getEntityBreadcrumbs, getEntityName } from './EntityUtils';
 import {
   TagLabelWithStatus,
@@ -469,16 +473,51 @@ export const getOwnerInfo = (owner: EntityReference, ownerLabel: ReactNode) => {
   );
 };
 
+export const getEntityReferenceDiffFromFieldName = (
+  fieldName: string,
+  changeDescription: ChangeDescription,
+  entity?: EntityReference
+) => {
+  const entityDiff = getDiffByFieldName(fieldName, changeDescription, true);
+
+  const oldEntity = JSON.parse(getChangedEntityOldValue(entityDiff) ?? '{}');
+  const newEntity = JSON.parse(getChangedEntityNewValue(entityDiff) ?? '{}');
+  const entityPlaceholder = getEntityName(entity);
+
+  let entityRef = entity;
+  let entityDisplayName: ReactNode = getEntityName(entity);
+
+  if (
+    !isUndefined(entityDiff.added) ||
+    !isUndefined(entityDiff.deleted) ||
+    !isUndefined(entityDiff.updated)
+  ) {
+    entityRef = isEmpty(newEntity) ? oldEntity : newEntity;
+    entityDisplayName = getDiffValue(
+      getEntityName(oldEntity),
+      getEntityName(newEntity)
+    );
+  } else if (entity) {
+    entityDisplayName = entityPlaceholder;
+  }
+
+  return {
+    entityRef,
+    entityDisplayName,
+  };
+};
+
 export const getCommonExtraInfoForVersionDetails = (
   changeDescription: ChangeDescription,
   owner?: EntityReference,
-  tier?: TagLabel
+  tier?: TagLabel,
+  domain?: EntityReference
 ) => {
-  const ownerDiff = getDiffByFieldName('owner', changeDescription);
+  const { entityRef: ownerRef, entityDisplayName: ownerDisplayName } =
+    getEntityReferenceDiffFromFieldName('owner', changeDescription, owner);
 
-  const oldOwner = JSON.parse(getChangedEntityOldValue(ownerDiff) ?? '{}');
-  const newOwner = JSON.parse(getChangedEntityNewValue(ownerDiff) ?? '{}');
-  const ownerPlaceHolder = getEntityName(owner);
+  const { entityDisplayName: domainDisplayName } =
+    getEntityReferenceDiffFromFieldName('domain', changeDescription, domain);
 
   const tagsDiff = getDiffByFieldName('tags', changeDescription, true);
   const newTier = [
@@ -489,34 +528,22 @@ export const getCommonExtraInfoForVersionDetails = (
     ...JSON.parse(getChangedEntityOldValue(tagsDiff) ?? '[]'),
   ].find((t) => (t?.tagFQN as string).startsWith('Tier'));
 
-  let ownerValue: ReactNode = getEntityName(owner);
-  let ownerRef = owner;
-  let tierValue: ReactNode = '';
-
-  if (
-    !isUndefined(ownerDiff.added) ||
-    !isUndefined(ownerDiff.deleted) ||
-    !isUndefined(ownerDiff.updated)
-  ) {
-    ownerRef = isEmpty(newOwner) ? oldOwner : newOwner;
-    ownerValue = getDiffValue(getEntityName(oldOwner), getEntityName(newOwner));
-  } else if (owner) {
-    getDiffValue(ownerPlaceHolder, ownerPlaceHolder);
-  }
+  let tierDisplayName: ReactNode = '';
 
   if (!isUndefined(newTier) || !isUndefined(oldTier)) {
-    tierValue = getDiffValue(
+    tierDisplayName = getDiffValue(
       oldTier?.tagFQN?.split(FQN_SEPARATOR_CHAR)[1] || '',
       newTier?.tagFQN?.split(FQN_SEPARATOR_CHAR)[1] || ''
     );
   } else if (tier?.tagFQN) {
-    tierValue = tier?.tagFQN.split(FQN_SEPARATOR_CHAR)[1];
+    tierDisplayName = tier?.tagFQN.split(FQN_SEPARATOR_CHAR)[1];
   }
 
   const extraInfo = {
-    ownerDisplayName: ownerValue,
-    tierDisplayName: tierValue,
     ownerRef,
+    ownerDisplayName,
+    domainDisplayName,
+    tierDisplayName,
   };
 
   return extraInfo;
@@ -695,7 +722,7 @@ export function getColumnsDataWithVersionChanges<
 }
 
 export const getUpdatedExtensionDiffFields = (
-  entityDetails: EntityDetails,
+  entityDetails: ExtentionEntities[ExtentionEntitiesKeys],
   extensionDiff: EntityDiffProps
 ) => {
   const extensionObj = entityDetails.extension;
@@ -776,6 +803,8 @@ export const getBasicEntityInfoFromVersionData = (
 ) => ({
   tier: getTierTags(currentVersionData.tags ?? []),
   owner: currentVersionData.owner,
+  domain: (currentVersionData as Exclude<VersionEntityTypes, MetadataService>)
+    .domain,
   breadcrumbLinks: getEntityBreadcrumbs(currentVersionData, entityType),
   changeDescription:
     currentVersionData.changeDescription ?? ({} as ChangeDescription),

@@ -25,17 +25,8 @@ import {
   Tooltip,
 } from 'antd';
 import { DefaultOptionType } from 'antd/lib/select';
-import { ReactComponent as DropDownIcon } from 'assets/svg/DropDown.svg';
 import { AxiosError } from 'axios';
 import classNames from 'classnames';
-import { SummaryCard } from 'components/common/SummaryCard/SummaryCard.component';
-import { SummaryCardProps } from 'components/common/SummaryCard/SummaryCard.interface';
-import DatePickerMenu from 'components/DatePickerMenu/DatePickerMenu.component';
-import { DateRangeObject } from 'components/ProfilerDashboard/component/TestSummary';
-import TabsLabel from 'components/TabsLabel/TabsLabel.component';
-import { useTourProvider } from 'components/TourProvider/TourProvider';
-import { mockDatasetData } from 'constants/mockTourData.constants';
-import { Column } from 'generated/entity/data/container';
 import {
   filter,
   find,
@@ -58,26 +49,39 @@ import React, {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useHistory, useLocation, useParams } from 'react-router-dom';
-import { getLatestTableProfileByFqn } from 'rest/tableAPI';
-import { getListTestCase, ListTestCaseParams } from 'rest/testAPI';
-import { bytesToSize, getDecodedFqn } from 'utils/StringsUtils';
 import { ReactComponent as ColumnProfileIcon } from '../../assets/svg/column-profile.svg';
 import { ReactComponent as DataQualityIcon } from '../../assets/svg/data-quality.svg';
+import { ReactComponent as DropDownIcon } from '../../assets/svg/DropDown.svg';
 import { ReactComponent as SettingIcon } from '../../assets/svg/ic-settings-primery.svg';
 import { ReactComponent as NoDataIcon } from '../../assets/svg/no-data-icon.svg';
 import { ReactComponent as TableProfileIcon } from '../../assets/svg/table-profile.svg';
+import { SummaryCard } from '../../components/common/SummaryCard/SummaryCard.component';
+import { SummaryCardProps } from '../../components/common/SummaryCard/SummaryCard.interface';
+import DatePickerMenu from '../../components/DatePickerMenu/DatePickerMenu.component';
+import { DateRangeObject } from '../../components/ProfilerDashboard/component/TestSummary';
+import TabsLabel from '../../components/TabsLabel/TabsLabel.component';
+import { useTourProvider } from '../../components/TourProvider/TourProvider';
 import { API_RES_MAX_SIZE } from '../../constants/constants';
+import { mockDatasetData } from '../../constants/mockTourData.constants';
 import { PAGE_HEADERS } from '../../constants/PageHeaders.constant';
 import {
   DEFAULT_RANGE_DATA,
   INITIAL_TEST_RESULT_SUMMARY,
 } from '../../constants/profiler.constant';
+import { TabSpecificField } from '../../enums/entity.enum';
 import { ProfilerDashboardType } from '../../enums/table.enum';
+import { Column } from '../../generated/entity/data/container';
 import { ProfileSampleType, Table } from '../../generated/entity/data/table';
 import { TestCase, TestCaseStatus } from '../../generated/tests/testCase';
 import { EntityType as TestType } from '../../generated/tests/testDefinition';
+import {
+  getLatestTableProfileByFqn,
+  getTableDetailsByFQN,
+} from '../../rest/tableAPI';
+import { getListTestCase, ListTestCaseParams } from '../../rest/testAPI';
 import { updateTestResults } from '../../utils/DataQualityAndProfilerUtils';
 import { getAddDataQualityTableTestPath } from '../../utils/RouterUtils';
+import { bytesToSize, getDecodedFqn } from '../../utils/StringsUtils';
 import { generateEntityLink } from '../../utils/TableUtils';
 import { showErrorToast } from '../../utils/ToastUtils';
 import PageHeader from '../header/PageHeader.component';
@@ -96,7 +100,6 @@ import {
 import './tableProfiler.less';
 
 const TableProfilerV1: FC<TableProfilerProps> = ({
-  testSuite,
   isTableDeleted,
   permissions,
 }: TableProfilerProps) => {
@@ -119,7 +122,7 @@ const TableProfilerV1: FC<TableProfilerProps> = ({
     return searchData as { activeTab: string; activeColumnFqn: string };
   }, [location.search, isTourOpen]);
 
-  const { datasetFQN } = useParams<{ datasetFQN: string }>();
+  const { fqn: datasetFQN } = useParams<{ fqn: string }>();
   const [table, setTable] = useState<Table>();
   const { profile, columns } = useMemo(() => {
     return { profile: table?.profile, columns: table?.columns || [] };
@@ -138,6 +141,7 @@ const TableProfilerV1: FC<TableProfilerProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [dateRangeObject, setDateRangeObject] =
     useState<DateRangeObject>(DEFAULT_RANGE_DATA);
+  const [testSuite, setTestSuite] = useState<Table['testSuite']>();
 
   const isColumnProfile = activeTab === TableProfilerTab.COLUMN_PROFILE;
   const isDataQuality = activeTab === TableProfilerTab.DATA_QUALITY;
@@ -471,6 +475,26 @@ const TableProfilerV1: FC<TableProfilerProps> = ({
 
     return { statusDict, totalTests: temp.length };
   }, [activeColumnFqn, columnTests]);
+
+  const fetchTestSuiteDetails = async () => {
+    setIsLoading(true);
+    try {
+      const details = await getTableDetailsByFQN(
+        datasetFQN,
+        TabSpecificField.TESTSUITE
+      );
+      setTestSuite(details.testSuite);
+    } catch (error) {
+      showErrorToast(error as AxiosError);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  useEffect(() => {
+    if (isDataQuality && isUndefined(testSuite)) {
+      fetchTestSuiteDetails();
+    }
+  }, [isDataQuality, testSuite]);
 
   useEffect(() => {
     const fetchTest =

@@ -11,14 +11,13 @@
  *  limitations under the License.
  */
 
-import { DateRangeObject } from 'components/ProfilerDashboard/component/TestSummary';
+import { DateRangeObject } from '../../components/ProfilerDashboard/component/TestSummary';
 import { SystemProfile } from '../../generated/api/data/createTableProfile';
 import {
   Column,
   ColumnProfilerConfig,
   PartitionProfilerConfig,
   ProfileSampleType,
-  Table,
   TableProfile,
   TableProfilerConfig,
 } from '../../generated/entity/data/table';
@@ -28,7 +27,6 @@ import { OperationPermission } from '../PermissionProvider/PermissionProvider.in
 export interface TableProfilerProps {
   isTableDeleted?: boolean;
   permissions: OperationPermission;
-  testSuite?: Table['testSuite'];
 }
 
 export type TableTestsType = {

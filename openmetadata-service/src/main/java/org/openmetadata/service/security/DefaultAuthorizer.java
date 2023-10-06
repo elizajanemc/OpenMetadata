@@ -13,6 +13,7 @@
 
 package org.openmetadata.service.security;
 
+import static org.openmetadata.common.utils.CommonUtil.nullOrEmpty;
 import static org.openmetadata.schema.type.Permission.Access.ALLOW;
 import static org.openmetadata.service.exception.CatalogExceptionMessage.notAdmin;
 
@@ -22,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.openmetadata.schema.type.EntityReference;
 import org.openmetadata.schema.type.ResourcePermission;
 import org.openmetadata.service.OpenMetadataApplicationConfig;
-import org.openmetadata.service.jdbi3.CollectionDAO;
 import org.openmetadata.service.security.policyevaluator.OperationContext;
 import org.openmetadata.service.security.policyevaluator.PolicyEvaluator;
 import org.openmetadata.service.security.policyevaluator.ResourceContextInterface;
@@ -32,7 +32,7 @@ import org.openmetadata.service.security.policyevaluator.SubjectContext;
 public class DefaultAuthorizer implements Authorizer {
 
   @Override
-  public void init(OpenMetadataApplicationConfig config, CollectionDAO dao) {
+  public void init(OpenMetadataApplicationConfig config) {
     LOG.info("Initializing DefaultAuthorizer with config {}", config.getAuthorizerConfiguration());
   }
 
@@ -70,6 +70,9 @@ public class DefaultAuthorizer implements Authorizer {
     SubjectContext subjectContext = getSubjectContext(securityContext);
     if (subjectContext.isAdmin()) {
       return;
+    }
+    if (isReviewer(resourceContext, subjectContext)) {
+      return; // Reviewer of a resource gets admin level privilege on the resource
     }
     PolicyEvaluator.hasPermission(subjectContext, resourceContext, operationContext);
   }
@@ -122,5 +125,16 @@ public class DefaultAuthorizer implements Authorizer {
       return SubjectContext.getSubjectContext(user);
     }
     return loggedInUser;
+  }
+
+  private boolean isReviewer(ResourceContextInterface resourceContext, SubjectContext subjectContext) {
+    if (resourceContext.getEntity() == null) {
+      return false;
+    }
+    String updatedBy = subjectContext.getUser().getName();
+    List<EntityReference> reviewers = resourceContext.getEntity().getReviewers();
+    return !nullOrEmpty(reviewers)
+        && reviewers.stream()
+            .anyMatch(e -> updatedBy.equals(e.getName()) || updatedBy.equals(e.getFullyQualifiedName()));
   }
 }

@@ -11,11 +11,11 @@
  *  limitations under the License.
  */
 
-import { ThreadType } from 'generated/api/feed/createThread';
-import { TagSource } from 'generated/type/tagLabel';
 import { EntityTags } from 'Models';
 import { ReactElement } from 'react';
-import { DisplayType } from '../TagsViewer/TagsViewer.interface';
+import { ThreadType } from '../../../generated/api/feed/createThread';
+import { TagSource } from '../../../generated/type/tagLabel';
+import { DisplayType, LayoutType } from '../TagsViewer/TagsViewer.interface';
 
 export type TagsContainerV2Props = {
   permission: boolean;
@@ -29,6 +29,7 @@ export type TagsContainerV2Props = {
   showInlineEditButton?: boolean;
   children?: ReactElement;
   displayType?: DisplayType;
+  layoutType?: LayoutType;
   onSelectionChange?: (selectedTags: EntityTags[]) => Promise<void>;
   onThreadLinkSelect?: (value: string, threadType?: ThreadType) => void;
 };

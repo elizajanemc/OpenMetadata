@@ -11,16 +11,17 @@
  *  limitations under the License.
  */
 
-import { StoredProcedureVersionProp } from 'components/StoredProcedureVersion/StoredProcedureVersion.interface';
-import { DatabaseServiceType, TableType } from 'generated/entity/data/table';
-import { ENTITY_PERMISSIONS } from 'mocks/Permissions.mock';
+import { StoredProcedureVersionProp } from '../components/StoredProcedureVersion/StoredProcedureVersion.interface';
+import { DatabaseServiceType, TableType } from '../generated/entity/data/table';
+import { ENTITY_PERMISSIONS } from '../mocks/Permissions.mock';
 import {
   mockBackHandler,
+  mockDomain,
   mockOwner,
   mockTier,
   mockVersionHandler,
   mockVersionList,
-} from 'mocks/VersionCommon.mock';
+} from '../mocks/VersionCommon.mock';
 
 const mockData = {
   id: 'ab4f893b-c303-43d9-9375-3e620a670b02',
@@ -83,6 +84,7 @@ const mockData = {
     previousVersion: 0.1,
   },
   deleted: false,
+  storedProcedureCode: '',
 };
 
 export const storedProcedureVersionMockProps: StoredProcedureVersionProp = {
@@ -90,6 +92,7 @@ export const storedProcedureVersionMockProps: StoredProcedureVersionProp = {
   currentVersionData: mockData,
   isVersionLoading: false,
   owner: mockOwner,
+  domain: mockDomain,
   tier: mockTier,
   slashedTableName: [],
   storedProcedureFQN:

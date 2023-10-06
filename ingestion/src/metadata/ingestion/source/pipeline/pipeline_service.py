@@ -17,9 +17,6 @@ from typing import Any, Iterable, List, Optional, Set
 from metadata.generated.schema.api.data.createPipeline import CreatePipelineRequest
 from metadata.generated.schema.api.lineage.addLineage import AddLineageRequest
 from metadata.generated.schema.entity.data.pipeline import Pipeline
-from metadata.generated.schema.entity.services.connections.metadata.openMetadataConnection import (
-    OpenMetadataConnection,
-)
 from metadata.generated.schema.entity.services.pipelineService import (
     PipelineConnection,
     PipelineService,
@@ -81,7 +78,6 @@ class PipelineServiceTopology(ServiceTopology):
                 type_=OMetaTagAndClassification,
                 context="tags",
                 processor="yield_tag",
-                ack_sink=False,
                 nullable=True,
             ),
             NodeStage(
@@ -92,18 +88,14 @@ class PipelineServiceTopology(ServiceTopology):
             ),
             NodeStage(
                 type_=OMetaPipelineStatus,
-                context="pipeline_status",
                 processor="yield_pipeline_status",
                 consumer=["pipeline_service"],
                 nullable=True,
-                ack_sink=False,
             ),
             NodeStage(
                 type_=AddLineageRequest,
-                context="lineage",
                 processor="yield_pipeline_lineage",
                 consumer=["pipeline_service"],
-                ack_sink=False,
                 nullable=True,
             ),
         ],
@@ -128,12 +120,11 @@ class PipelineServiceSource(TopologyRunnerMixin, Source, ABC):
     def __init__(
         self,
         config: WorkflowSource,
-        metadata_config: OpenMetadataConnection,
+        metadata: OpenMetadata,
     ):
         super().__init__()
         self.config = config
-        self.metadata_config = metadata_config
-        self.metadata = OpenMetadata(metadata_config)
+        self.metadata = metadata
         self.service_connection = self.config.serviceConnection.__root__.config
         self.source_config: PipelineServiceMetadataPipeline = (
             self.config.sourceConfig.config

@@ -12,16 +12,17 @@
  */
 import { AxiosResponse } from 'axios';
 import { Operation } from 'fast-json-patch';
-import { StoredProcedure } from 'generated/entity/data/storedProcedure';
-import { EntityHistory } from 'generated/type/entityHistory';
-import { EntityReference } from 'generated/type/entityReference';
-import { Include } from 'generated/type/include';
 import { PagingResponse, RestoreRequestType } from 'Models';
-import { ServicePageData } from 'pages/ServiceDetailsPage/ServiceDetailsPage';
-import { getURLWithQueryFields } from 'utils/APIUtils';
+import { QueryVote } from '../components/TableQueries/TableQueries.interface';
+import { StoredProcedure } from '../generated/entity/data/storedProcedure';
+import { EntityHistory } from '../generated/type/entityHistory';
+import { EntityReference } from '../generated/type/entityReference';
+import { Include } from '../generated/type/include';
+import { ServicePageData } from '../pages/ServiceDetailsPage/ServiceDetailsPage';
+import { getURLWithQueryFields } from '../utils/APIUtils';
 import APIClient from './index';
 
-interface ListStoredProcedureParams {
+export interface ListStoredProcedureParams {
   databaseSchema?: string;
   fields?: string;
   after?: string;
@@ -158,6 +159,18 @@ export const restoreStoredProcedures = async (id: string) => {
     RestoreRequestType,
     AxiosResponse<StoredProcedure>
   >(`${URL}/restore`, { id });
+
+  return response.data;
+};
+
+export const updateStoredProcedureVotes = async (
+  id: string,
+  data: QueryVote
+) => {
+  const response = await APIClient.put<
+    QueryVote,
+    AxiosResponse<StoredProcedure>
+  >(`${URL}/${id}/vote`, data);
 
   return response.data;
 };

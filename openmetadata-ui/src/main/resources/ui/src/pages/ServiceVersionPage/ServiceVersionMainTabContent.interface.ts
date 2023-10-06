@@ -11,11 +11,12 @@
  *  limitations under the License.
  */
 
-import { EntityType } from 'enums/entity.enum';
-import { ChangeDescription } from 'generated/entity/type';
-import { Paging } from 'generated/type/paging';
-import { ServicesType } from 'interface/service.interface';
-import { ServicePageData } from 'pages/ServiceDetailsPage/ServiceDetailsPage';
+import { NextPreviousProps } from '../../components/common/next-previous/NextPrevious.interface';
+import { EntityType } from '../../enums/entity.enum';
+import { ChangeDescription } from '../../generated/entity/type';
+import { Paging } from '../../generated/type/paging';
+import { ServicesType } from '../../interface/service.interface';
+import { ServicePageData } from '../../pages/ServiceDetailsPage/ServiceDetailsPage';
 
 export interface ServiceVersionMainTabContentProps {
   serviceName: string;
@@ -24,7 +25,7 @@ export interface ServiceVersionMainTabContentProps {
   isServiceLoading: boolean;
   paging: Paging;
   currentPage: number;
-  pagingHandler: (cursorType: string | number, activePage?: number) => void;
+  pagingHandler: NextPreviousProps['pagingHandler'];
   entityType: EntityType;
   changeDescription: ChangeDescription;
 }

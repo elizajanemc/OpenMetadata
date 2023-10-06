@@ -12,10 +12,10 @@
  */
 import { Button, Modal } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
-import { CreateDataProduct } from 'generated/api/domains/createDataProduct';
-import { CreateDomain } from 'generated/api/domains/createDomain';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { CreateDataProduct } from '../../../generated/api/domains/createDataProduct';
+import { CreateDomain } from '../../../generated/api/domains/createDomain';
 import AddDomainForm from '../AddDomainForm/AddDomainForm.component';
 import { DomainFormType } from '../DomainPage.interface';
 import { AddDataProductModalProps } from './AddDataProductModal.interface';
@@ -37,6 +37,7 @@ const AddDataProductModal = ({
   return (
     <Modal
       cancelText={t('label.cancel')}
+      className="add-data-product-modal"
       closable={false}
       footer={[
         <Button key="cancel-btn" type="link" onClick={onCancel}>

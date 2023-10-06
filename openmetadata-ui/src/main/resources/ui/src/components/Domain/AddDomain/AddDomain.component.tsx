@@ -13,20 +13,21 @@
 import { Typography } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import { AxiosError } from 'axios';
-import ResizablePanels from 'components/common/ResizablePanels/ResizablePanels';
-import TitleBreadcrumb from 'components/common/title-breadcrumb/title-breadcrumb.component';
-import { ERROR_MESSAGE } from 'constants/constants';
-import { CreateDataProduct } from 'generated/api/domains/createDataProduct';
-import { CreateDomain } from 'generated/api/domains/createDomain';
 import React, { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
-import { addDomains } from 'rest/domainAPI';
-import { getIsErrorMatch } from 'utils/CommonUtils';
-import { getDomainPath } from 'utils/RouterUtils';
-import { showErrorToast } from 'utils/ToastUtils';
+import { ERROR_MESSAGE } from '../../../constants/constants';
+import { CreateDataProduct } from '../../../generated/api/domains/createDataProduct';
+import { CreateDomain } from '../../../generated/api/domains/createDomain';
+import { addDomains } from '../../../rest/domainAPI';
+import { getIsErrorMatch } from '../../../utils/CommonUtils';
+import { getDomainPath } from '../../../utils/RouterUtils';
+import { showErrorToast } from '../../../utils/ToastUtils';
+import ResizablePanels from '../../common/ResizablePanels/ResizablePanels';
+import TitleBreadcrumb from '../../common/title-breadcrumb/title-breadcrumb.component';
 import AddDomainForm from '../AddDomainForm/AddDomainForm.component';
 import { DomainFormType } from '../DomainPage.interface';
+import { useDomainProvider } from '../DomainProvider/DomainProvider';
 import './add-domain.less';
 
 const AddDomain = () => {
@@ -34,6 +35,7 @@ const AddDomain = () => {
   const history = useHistory();
   const [form] = useForm();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { refreshDomains } = useDomainProvider();
 
   const goToDomain = (name = '') => {
     history.push(getDomainPath(name));
@@ -62,6 +64,7 @@ const AddDomain = () => {
       setIsLoading(true);
       try {
         const res = await addDomains(formData as CreateDomain);
+        refreshDomains();
         goToDomain(res.fullyQualifiedName ?? '');
       } catch (error) {
         showErrorToast(
@@ -90,6 +93,9 @@ const AddDomain = () => {
           entity: t('label.domain'),
         })}
       </Typography.Title>
+      <Typography.Text className="mb-5">
+        {t('message.create-new-domain-guide')}
+      </Typography.Text>
     </div>
   );
 

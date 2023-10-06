@@ -21,6 +21,7 @@ import static org.openmetadata.service.Entity.FIELD_DESCRIPTION;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.openmetadata.schema.EntityInterface;
 import org.openmetadata.schema.entity.data.Chart;
 import org.openmetadata.schema.entity.data.Dashboard;
 import org.openmetadata.schema.entity.services.DashboardService;
@@ -43,16 +44,15 @@ public class DashboardRepository extends EntityRepository<Dashboard> {
   private static final String DASHBOARD_PATCH_FIELDS = "charts,dataModels";
   private static final String DASHBOARD_URL = "sourceUrl";
 
-  public DashboardRepository(CollectionDAO dao) {
+  public DashboardRepository() {
     super(
         DashboardResource.COLLECTION_PATH,
         Entity.DASHBOARD,
         Dashboard.class,
-        dao.dashboardDAO(),
-        dao,
+        Entity.getCollectionDAO().dashboardDAO(),
         DASHBOARD_PATCH_FIELDS,
         DASHBOARD_UPDATE_FIELDS);
-    supportsSearchIndex = true;
+    supportsSearch = true;
   }
 
   @Override
@@ -186,6 +186,11 @@ public class DashboardRepository extends EntityRepository<Dashboard> {
   @Override
   public EntityUpdater getUpdater(Dashboard original, Dashboard updated, Operation operation) {
     return new DashboardUpdater(original, updated, operation);
+  }
+
+  @Override
+  public EntityInterface getParentEntity(Dashboard entity, String fields) {
+    return Entity.getEntity(entity.getService(), fields, Include.NON_DELETED);
   }
 
   private List<EntityReference> getRelatedEntities(Dashboard dashboard, String entityType) {

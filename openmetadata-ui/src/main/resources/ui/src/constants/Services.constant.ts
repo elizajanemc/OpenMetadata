@@ -11,23 +11,14 @@
  *  limitations under the License.
  */
 
-import amazonS3 from 'assets/img/service-icon-amazon-s3.svg';
-import gcs from 'assets/img/service-icon-gcs.png';
-import lightDash from 'assets/img/service-icon-lightdash.png';
-import msAzure from 'assets/img/service-icon-ms-azure.png';
-import { EntityType } from 'enums/entity.enum';
-import { PipelineType } from 'generated/api/services/ingestionPipelines/createIngestionPipeline';
-import { WorkflowStatus } from 'generated/entity/automations/workflow';
-import { StorageServiceType } from 'generated/entity/data/container';
-import { ServiceType } from 'generated/entity/services/serviceType';
 import { map, startCase } from 'lodash';
 import { ServiceTypes, StepperStepType } from 'Models';
-import i18n from 'utils/i18next/LocalUtil';
 import addPlaceHolder from '../assets/img/add-placeholder.svg';
 import airbyte from '../assets/img/Airbyte.png';
 import noDataFound from '../assets/img/no-data-placeholder.svg';
 import noService from '../assets/img/no-service.png';
 import airflow from '../assets/img/service-icon-airflow.png';
+import amazonS3 from '../assets/img/service-icon-amazon-s3.svg';
 import amundsen from '../assets/img/service-icon-amundsen.png';
 import athena from '../assets/img/service-icon-athena.png';
 import atlas from '../assets/img/service-icon-atlas.svg';
@@ -42,17 +33,21 @@ import domo from '../assets/img/service-icon-domo.png';
 import druid from '../assets/img/service-icon-druid.png';
 import dynamodb from '../assets/img/service-icon-dynamodb.png';
 import fivetran from '../assets/img/service-icon-fivetran.png';
+import gcs from '../assets/img/service-icon-gcs.png';
 import glue from '../assets/img/service-icon-glue.png';
+import greenplum from '../assets/img/service-icon-greenplum.png';
 import hive from '../assets/img/service-icon-hive.png';
 import ibmdb2 from '../assets/img/service-icon-ibmdb2.png';
 import impala from '../assets/img/service-icon-impala.png';
 import kafka from '../assets/img/service-icon-kafka.png';
 import kinesis from '../assets/img/service-icon-kinesis.png';
+import lightDash from '../assets/img/service-icon-lightdash.png';
 import looker from '../assets/img/service-icon-looker.png';
 import mariadb from '../assets/img/service-icon-mariadb.png';
 import metabase from '../assets/img/service-icon-metabase.png';
 import mode from '../assets/img/service-icon-mode.png';
 import mongodb from '../assets/img/service-icon-mongodb.png';
+import msAzure from '../assets/img/service-icon-ms-azure.png';
 import mssql from '../assets/img/service-icon-mssql.png';
 import nifi from '../assets/img/service-icon-nifi.png';
 import oracle from '../assets/img/service-icon-oracle.png';
@@ -83,21 +78,30 @@ import trino from '../assets/img/service-icon-trino.png';
 import vertica from '../assets/img/service-icon-vertica.png';
 import dashboardDefault from '../assets/svg/dashboard.svg';
 import iconDefaultService from '../assets/svg/default-service-icon.svg';
+import elasticSearch from '../assets/svg/elasticsearch.svg';
 import databaseDefault from '../assets/svg/ic-custom-database.svg';
 import mlModelDefault from '../assets/svg/ic-custom-model.svg';
 import storageDefault from '../assets/svg/ic-custom-storage.svg';
 import logo from '../assets/svg/logo-monogram.svg';
+import openSearch from '../assets/svg/open-search.svg';
 import pipelineDefault from '../assets/svg/pipeline.svg';
 import plus from '../assets/svg/plus.svg';
 import mlflow from '../assets/svg/service-icon-mlflow.svg';
 import topicDefault from '../assets/svg/topic.svg';
+import { EntityType } from '../enums/entity.enum';
 import { ServiceCategory } from '../enums/service.enum';
+import { PipelineType } from '../generated/api/services/ingestionPipelines/createIngestionPipeline';
+import { WorkflowStatus } from '../generated/entity/automations/workflow';
+import { StorageServiceType } from '../generated/entity/data/container';
 import { DashboardServiceType } from '../generated/entity/services/dashboardService';
 import { DatabaseServiceType } from '../generated/entity/services/databaseService';
 import { MessagingServiceType } from '../generated/entity/services/messagingService';
 import { MetadataServiceType } from '../generated/entity/services/metadataService';
 import { MlModelServiceType } from '../generated/entity/services/mlmodelService';
 import { PipelineServiceType } from '../generated/entity/services/pipelineService';
+import { SearchServiceType } from '../generated/entity/services/searchService';
+import { ServiceType } from '../generated/entity/services/serviceType';
+import i18n from '../utils/i18next/LocalUtil';
 import { customServiceComparator } from '../utils/StringsUtils';
 import {
   addDBTIngestionGuide,
@@ -178,6 +182,9 @@ export const MONGODB = mongodb;
 export const QLIK_SENSE = qlikSense;
 export const LIGHT_DASH = lightDash;
 export const COUCHBASE = couchbase;
+export const GREENPLUM = greenplum;
+export const ELASTIC_SEARCH = elasticSearch;
+export const OPEN_SEARCH = openSearch;
 
 export const PLUS = plus;
 export const NOSERVICE = noService;
@@ -185,6 +192,7 @@ export const excludedService = [
   MlModelServiceType.Sklearn,
   MetadataServiceType.MetadataES,
   MetadataServiceType.OpenMetadata,
+  SearchServiceType.OpenSearch,
 ];
 
 export const IGNORED_DB_SERVICES: Array<string> = ['QueryLog', 'Dbt'];
@@ -211,6 +219,9 @@ export const serviceTypes: Record<ServiceTypes, Array<string>> = {
   storageServices: (Object.values(StorageServiceType) as string[]).sort(
     customServiceComparator
   ),
+  searchServices: (Object.values(SearchServiceType) as string[]).sort(
+    customServiceComparator
+  ),
 };
 
 export const arrServiceTypes: Array<ServiceTypes> = [
@@ -230,6 +241,7 @@ export const SERVICE_CATEGORY: { [key: string]: ServiceCategory } = {
   mlModels: ServiceCategory.ML_MODEL_SERVICES,
   metadata: ServiceCategory.METADATA_SERVICES,
   storages: ServiceCategory.STORAGE_SERVICES,
+  search: ServiceCategory.SEARCH_SERVICES,
 };
 
 export const SERVICE_CATEGORY_TYPE = {
@@ -240,6 +252,7 @@ export const SERVICE_CATEGORY_TYPE = {
   mlmodelServices: 'mlModels',
   metadataServices: 'metadata',
   storageServices: 'storages',
+  searchServices: 'search',
 };
 
 export const servicesDisplayName: { [key: string]: string } = {
@@ -263,6 +276,9 @@ export const servicesDisplayName: { [key: string]: string } = {
   }),
   storageServices: i18n.t('label.entity-service', {
     entity: i18n.t('label.storage'),
+  }),
+  searchServices: i18n.t('label.entity-service', {
+    entity: i18n.t('label.search'),
   }),
   dashboardDataModel: i18n.t('label.entity-service', {
     entity: i18n.t('label.data-model'),
@@ -379,6 +395,18 @@ export const SERVICE_TYPE_MAP = {
   [ServiceCategory.METADATA_SERVICES]: ServiceType.Metadata,
   [ServiceCategory.STORAGE_SERVICES]: ServiceType.Storage,
   [ServiceCategory.PIPELINE_SERVICES]: ServiceType.Pipeline,
+  [ServiceCategory.SEARCH_SERVICES]: ServiceType.Search,
+};
+
+export const SERVICE_TYPES_ENUM = {
+  [ServiceCategory.DASHBOARD_SERVICES]: DashboardServiceType,
+  [ServiceCategory.DATABASE_SERVICES]: DatabaseServiceType,
+  [ServiceCategory.MESSAGING_SERVICES]: MessagingServiceType,
+  [ServiceCategory.ML_MODEL_SERVICES]: MlModelServiceType,
+  [ServiceCategory.METADATA_SERVICES]: MetadataServiceType,
+  [ServiceCategory.STORAGE_SERVICES]: StorageServiceType,
+  [ServiceCategory.PIPELINE_SERVICES]: PipelineServiceType,
+  [ServiceCategory.SEARCH_SERVICES]: SearchServiceType,
 };
 
 export const BETA_SERVICES = [
@@ -387,6 +415,8 @@ export const BETA_SERVICES = [
   DatabaseServiceType.MongoDB,
   DashboardServiceType.QlikSense,
   DatabaseServiceType.Couchbase,
+  SearchServiceType.ElasticSearch,
+  DatabaseServiceType.Greenplum,
 ];
 
 export const TEST_CONNECTION_INITIAL_MESSAGE = i18n.t(
@@ -429,4 +459,5 @@ export const SERVICE_TYPES = [
   EntityType.MLMODEL_SERVICE,
   EntityType.METADATA_SERVICE,
   EntityType.STORAGE_SERVICE,
+  EntityType.SEARCH_SERVICE,
 ];

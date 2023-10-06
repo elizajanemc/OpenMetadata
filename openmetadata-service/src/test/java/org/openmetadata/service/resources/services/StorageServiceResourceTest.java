@@ -27,12 +27,11 @@ import org.openmetadata.schema.services.connections.storage.S3Connection;
 import org.openmetadata.schema.type.ChangeDescription;
 import org.openmetadata.schema.type.StorageConnection;
 import org.openmetadata.service.Entity;
-import org.openmetadata.service.resources.EntityResourceTest;
 import org.openmetadata.service.resources.services.storage.StorageServiceResource;
 import org.openmetadata.service.util.JsonUtils;
 import org.openmetadata.service.util.TestUtils;
 
-public class StorageServiceResourceTest extends EntityResourceTest<StorageService, CreateStorageService> {
+public class StorageServiceResourceTest extends ServiceResourceTest<StorageService, CreateStorageService> {
   public StorageServiceResourceTest() {
     super(
         Entity.STORAGE_SERVICE,
@@ -64,12 +63,6 @@ public class StorageServiceResourceTest extends EntityResourceTest<StorageServic
         () -> createEntity(createRequest(test).withServiceType(null), ADMIN_AUTH_HEADERS),
         BAD_REQUEST,
         "[serviceType must not be null]");
-
-    // Create StorageService with mandatory connection field empty
-    assertResponse(
-        () -> createEntity(createRequest(test).withConnection(null), ADMIN_AUTH_HEADERS),
-        BAD_REQUEST,
-        "[connection must not be null]");
   }
 
   @Test
@@ -80,6 +73,9 @@ public class StorageServiceResourceTest extends EntityResourceTest<StorageServic
     createAndCheckEntity(createRequest(test, 2).withDescription("description"), authHeaders);
 
     createAndCheckEntity(createRequest(test, 3).withConnection(TestUtils.S3_STORAGE_CONNECTION), authHeaders);
+
+    // We can create the service without connection
+    createAndCheckEntity(createRequest(test).withConnection(null), ADMIN_AUTH_HEADERS);
   }
 
   @Test

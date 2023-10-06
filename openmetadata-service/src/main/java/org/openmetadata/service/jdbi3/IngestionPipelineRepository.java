@@ -52,13 +52,12 @@ public class IngestionPipelineRepository extends EntityRepository<IngestionPipel
   private static final String RUN_ID_EXTENSION_KEY = "runId";
   private PipelineServiceClient pipelineServiceClient;
 
-  public IngestionPipelineRepository(CollectionDAO dao) {
+  public IngestionPipelineRepository() {
     super(
         IngestionPipelineResource.COLLECTION_PATH,
         Entity.INGESTION_PIPELINE,
         IngestionPipeline.class,
-        dao.ingestionPipelineDAO(),
-        dao,
+        Entity.getCollectionDAO().ingestionPipelineDAO(),
         PATCH_FIELDS,
         UPDATE_FIELDS);
   }
@@ -137,6 +136,11 @@ public class IngestionPipelineRepository extends EntityRepository<IngestionPipel
   @Override
   protected void postDelete(IngestionPipeline entity) {
     pipelineServiceClient.deletePipeline(entity);
+  }
+
+  @Override
+  public EntityInterface getParentEntity(IngestionPipeline entity, String fields) {
+    return Entity.getEntity(entity.getService(), fields, Include.NON_DELETED);
   }
 
   public void setPipelineServiceClient(PipelineServiceClient client) {

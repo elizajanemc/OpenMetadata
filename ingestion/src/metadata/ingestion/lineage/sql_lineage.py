@@ -12,7 +12,7 @@
 Helper functions to handle SQL lineage operations
 """
 import traceback
-from typing import Any, Iterable, List, Optional
+from typing import Any, Iterable, List, Optional, Tuple
 
 from metadata.generated.schema.api.lineage.addLineage import AddLineageRequest
 from metadata.generated.schema.entity.data.table import Table
@@ -120,6 +120,34 @@ def search_table_entities(
         return None
 
 
+def get_table_fqn_from_query_name(
+    table_name: str,
+) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    """
+    Method to extract database, schema and table name
+    from raw table name used in query
+    """
+
+    split_table = table_name.split(".")
+    empty_list: List[Any] = [None]  # Otherwise, there's a typing error in the concat
+
+    if len(split_table) > 3:
+        # In case of bigquery, it is possible that tables within information schema when
+        # referred with their fully qualified name may look like this
+        # `project-id.dataset-id.information_schema.table-name` in such cases there
+        # will be 4 values to unpack vs the expected 3 values, hence in such case we
+        # just pick the table name and keep the database and schema name as none
+
+        table = split_table[-1]
+        database_query, schema_query = None, None
+    else:
+        database_query, schema_query, table = (
+            empty_list * (3 - len(split_table))
+        ) + split_table
+
+    return database_query, schema_query, table
+
+
 def get_table_entities_from_query(
     metadata: OpenMetadata,
     service_name: str,
@@ -143,12 +171,7 @@ def get_table_entities_from_query(
     # First try to find the data from the given db and schema (with table name as given or uppercase)
     # Otherwise, pick it up from the table_name str (with table name as given or uppercase)
 
-    split_table = table_name.split(".")
-    empty_list: List[Any] = [None]  # Otherwise, there's a typing error in the concat
-
-    database_query, schema_query, table = (
-        empty_list * (3 - len(split_table))
-    ) + split_table
+    database_query, schema_query, table = get_table_fqn_from_query_name(table_name)
 
     table_entities = search_table_entities(
         metadata=metadata,
@@ -229,17 +252,17 @@ def _build_table_lineage(
     """
     Prepare the lineage request generator
     """
-    col_lineage = get_column_lineage(
-        to_entity=to_entity,
-        to_table_raw_name=str(to_table_raw_name),
-        from_entity=from_entity,
-        from_table_raw_name=str(from_table_raw_name),
-        column_lineage_map=column_lineage_map,
-    )
-    lineage_details = LineageDetails(sqlQuery=query, source=lineage_source)
-    if col_lineage:
-        lineage_details.columnsLineage = col_lineage
     if from_entity and to_entity:
+        col_lineage = get_column_lineage(
+            to_entity=to_entity,
+            to_table_raw_name=str(to_table_raw_name),
+            from_entity=from_entity,
+            from_table_raw_name=str(from_table_raw_name),
+            column_lineage_map=column_lineage_map,
+        )
+        lineage_details = LineageDetails(sqlQuery=query, source=lineage_source)
+        if col_lineage:
+            lineage_details.columnsLineage = col_lineage
         lineage = AddLineageRequest(
             edge=EntitiesEdge(
                 fromEntity=EntityReference(

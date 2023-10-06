@@ -44,7 +44,6 @@ import org.openmetadata.schema.type.EntityReference;
 import org.openmetadata.schema.type.MetadataOperation;
 import org.openmetadata.schema.type.Votes;
 import org.openmetadata.service.Entity;
-import org.openmetadata.service.jdbi3.CollectionDAO;
 import org.openmetadata.service.jdbi3.ListFilter;
 import org.openmetadata.service.jdbi3.QueryRepository;
 import org.openmetadata.service.resources.Collection;
@@ -66,8 +65,8 @@ public class QueryResource extends EntityResource<Query, QueryRepository> {
   public static final String COLLECTION_PATH = "v1/queries/";
   static final String FIELDS = "owner,followers,users,votes,tags,queryUsedIn";
 
-  public QueryResource(CollectionDAO dao, Authorizer authorizer) {
-    super(Query.class, new QueryRepository(dao), authorizer);
+  public QueryResource(Authorizer authorizer) {
+    super(Entity.QUERY, authorizer);
   }
 
   @Override
@@ -116,6 +115,9 @@ public class QueryResource extends EntityResource<Query, QueryRepository> {
       @Parameter(description = "UUID of the entity for which to list the Queries", schema = @Schema(type = "UUID"))
           @QueryParam("entityId")
           UUID entityId,
+      @Parameter(description = "Filter Queries by service Fully Qualified Name", schema = @Schema(type = "string"))
+          @QueryParam("service")
+          String service,
       @Parameter(description = "Limit the number queries returned. " + "(1 to 1000000, default = 10)")
           @DefaultValue("10")
           @Min(0)
@@ -132,6 +134,7 @@ public class QueryResource extends EntityResource<Query, QueryRepository> {
     if (!CommonUtil.nullOrEmpty(entityId)) {
       filter.addQueryParam("entityId", entityId.toString());
     }
+    filter.addQueryParam("service", service);
     ResultList<Query> queries =
         super.listInternal(uriInfo, securityContext, fieldsParam, filter, limitParam, before, after);
     return PIIMasker.getQueries(queries, authorizer, securityContext);
@@ -509,6 +512,7 @@ public class QueryResource extends EntityResource<Query, QueryRepository> {
     return copy(new Query(), create, user)
         .withTags(create.getTags())
         .withQuery(create.getQuery())
+        .withService(getEntityReference(Entity.DATABASE_SERVICE, create.getService()))
         .withDuration(create.getDuration())
         .withVotes(new Votes().withUpVotes(0).withDownVotes(0))
         .withUsers(getEntityReferences(USER, create.getUsers()))

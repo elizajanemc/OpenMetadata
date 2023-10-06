@@ -65,7 +65,7 @@ describe('Tags page should work', () => {
     interceptURL('GET', `/api/v1/permissions/classification/*`, 'permissions');
     interceptURL(
       'GET',
-      `/api/v1/search/query?q=*%20AND%20disabled%3Afalse&index=tag_search_index*`,
+      `/api/v1/search/query?q=*%20AND%20disabled:false&index=tag_search_index*`,
       'suggestTag'
     );
     visitClassificationPage();
@@ -172,6 +172,9 @@ describe('Tags page should work', () => {
       .should('be.visible')
       .type(NEW_TAG.displayName);
     cy.get(descriptionBox).should('be.visible').type(NEW_TAG.description);
+
+    cy.get('[data-testid="icon-url"]').scrollIntoView().type(NEW_TAG.icon);
+    cy.get('[data-testid="color-input"]').scrollIntoView().type(NEW_TAG.color);
 
     interceptURL('POST', '/api/v1/tags', 'createTag');
     submitForm();

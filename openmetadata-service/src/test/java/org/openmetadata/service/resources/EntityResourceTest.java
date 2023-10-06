@@ -33,13 +33,7 @@ import static org.openmetadata.csv.EntityCsvTest.assertSummary;
 import static org.openmetadata.schema.type.MetadataOperation.EDIT_ALL;
 import static org.openmetadata.schema.type.MetadataOperation.EDIT_TESTS;
 import static org.openmetadata.schema.type.TaskType.RequestDescription;
-import static org.openmetadata.service.Entity.ADMIN_USER_NAME;
-import static org.openmetadata.service.Entity.FIELD_DELETED;
-import static org.openmetadata.service.Entity.FIELD_EXTENSION;
-import static org.openmetadata.service.Entity.FIELD_FOLLOWERS;
-import static org.openmetadata.service.Entity.FIELD_OWNER;
-import static org.openmetadata.service.Entity.FIELD_TAGS;
-import static org.openmetadata.service.Entity.FIELD_VOTES;
+import static org.openmetadata.service.Entity.*;
 import static org.openmetadata.service.exception.CatalogExceptionMessage.ENTITY_ALREADY_EXISTS;
 import static org.openmetadata.service.exception.CatalogExceptionMessage.entityIsNotEmpty;
 import static org.openmetadata.service.exception.CatalogExceptionMessage.entityNotFound;
@@ -51,24 +45,9 @@ import static org.openmetadata.service.util.EntityUtil.fieldAdded;
 import static org.openmetadata.service.util.EntityUtil.fieldDeleted;
 import static org.openmetadata.service.util.EntityUtil.fieldUpdated;
 import static org.openmetadata.service.util.EntityUtil.getEntityReference;
-import static org.openmetadata.service.util.TestUtils.ADMIN_AUTH_HEADERS;
-import static org.openmetadata.service.util.TestUtils.INGESTION_BOT_AUTH_HEADERS;
-import static org.openmetadata.service.util.TestUtils.LONG_ENTITY_NAME;
-import static org.openmetadata.service.util.TestUtils.NON_EXISTENT_ENTITY;
-import static org.openmetadata.service.util.TestUtils.TEST_AUTH_HEADERS;
-import static org.openmetadata.service.util.TestUtils.TEST_USER_NAME;
-import static org.openmetadata.service.util.TestUtils.UpdateType;
+import static org.openmetadata.service.util.TestUtils.*;
 import static org.openmetadata.service.util.TestUtils.UpdateType.MINOR_UPDATE;
 import static org.openmetadata.service.util.TestUtils.UpdateType.NO_CHANGE;
-import static org.openmetadata.service.util.TestUtils.assertEntityPagination;
-import static org.openmetadata.service.util.TestUtils.assertListNotEmpty;
-import static org.openmetadata.service.util.TestUtils.assertListNotNull;
-import static org.openmetadata.service.util.TestUtils.assertListNull;
-import static org.openmetadata.service.util.TestUtils.assertResponse;
-import static org.openmetadata.service.util.TestUtils.assertResponseContains;
-import static org.openmetadata.service.util.TestUtils.checkUserFollowing;
-import static org.openmetadata.service.util.TestUtils.validateEntityReference;
-import static org.openmetadata.service.util.TestUtils.validateEntityReferences;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -133,12 +112,14 @@ import org.openmetadata.schema.CreateEntity;
 import org.openmetadata.schema.EntityInterface;
 import org.openmetadata.schema.api.data.RestoreEntity;
 import org.openmetadata.schema.api.data.TermReference;
+import org.openmetadata.schema.api.domains.CreateDomain.DomainType;
 import org.openmetadata.schema.api.feed.CreateThread;
 import org.openmetadata.schema.api.teams.CreateTeam;
 import org.openmetadata.schema.api.teams.CreateTeam.TeamType;
 import org.openmetadata.schema.api.tests.CreateTestSuite;
 import org.openmetadata.schema.dataInsight.DataInsightChart;
 import org.openmetadata.schema.dataInsight.type.KpiTarget;
+import org.openmetadata.schema.entities.docStore.Document;
 import org.openmetadata.schema.entity.Type;
 import org.openmetadata.schema.entity.classification.Classification;
 import org.openmetadata.schema.entity.classification.Tag;
@@ -155,13 +136,16 @@ import org.openmetadata.schema.entity.policies.accessControl.Rule;
 import org.openmetadata.schema.entity.services.connections.TestConnectionResult;
 import org.openmetadata.schema.entity.services.connections.TestConnectionResultStatus;
 import org.openmetadata.schema.entity.services.connections.TestConnectionStepResult;
+import org.openmetadata.schema.entity.teams.Persona;
 import org.openmetadata.schema.entity.teams.Role;
 import org.openmetadata.schema.entity.teams.Team;
 import org.openmetadata.schema.entity.teams.User;
 import org.openmetadata.schema.entity.type.Category;
 import org.openmetadata.schema.entity.type.CustomProperty;
+import org.openmetadata.schema.entity.type.Style;
 import org.openmetadata.schema.tests.TestDefinition;
 import org.openmetadata.schema.tests.TestSuite;
+import org.openmetadata.schema.type.AccessDetails;
 import org.openmetadata.schema.type.AnnouncementDetails;
 import org.openmetadata.schema.type.ChangeDescription;
 import org.openmetadata.schema.type.ChangeEvent;
@@ -171,6 +155,7 @@ import org.openmetadata.schema.type.EntityReference;
 import org.openmetadata.schema.type.EventType;
 import org.openmetadata.schema.type.FieldChange;
 import org.openmetadata.schema.type.Include;
+import org.openmetadata.schema.type.LifeCycle;
 import org.openmetadata.schema.type.MetadataOperation;
 import org.openmetadata.schema.type.TagLabel;
 import org.openmetadata.schema.type.csv.CsvDocumentation;
@@ -203,11 +188,8 @@ import org.openmetadata.service.resources.services.PipelineServiceResourceTest;
 import org.openmetadata.service.resources.services.SearchServiceResourceTest;
 import org.openmetadata.service.resources.services.StorageServiceResourceTest;
 import org.openmetadata.service.resources.tags.TagResourceTest;
-import org.openmetadata.service.resources.teams.RoleResourceTest;
-import org.openmetadata.service.resources.teams.TeamResourceTest;
-import org.openmetadata.service.resources.teams.UserResourceTest;
-import org.openmetadata.service.search.IndexUtil;
-import org.openmetadata.service.search.SearchIndexDefinition;
+import org.openmetadata.service.resources.teams.*;
+import org.openmetadata.service.search.models.IndexMapping;
 import org.openmetadata.service.security.SecurityUtil;
 import org.openmetadata.service.util.EntityUtil;
 import org.openmetadata.service.util.JsonUtils;
@@ -240,6 +222,8 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
 
   protected final boolean supportsCustomExtension;
 
+  protected final boolean supportsLifeCycle;
+
   public static final String DATA_STEWARD_ROLE_NAME = "DataSteward";
   public static final String DATA_CONSUMER_ROLE_NAME = "DataConsumer";
 
@@ -254,6 +238,7 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
   public static Domain SUB_DOMAIN;
   public static DataProduct DOMAIN_DATA_PRODUCT;
   public static DataProduct SUB_DOMAIN_DATA_PRODUCT;
+  public static Domain DOMAIN1;
 
   // Users
   public static User USER1;
@@ -270,10 +255,16 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
   public static Team TEAM2; // Team 2 has team only policy and does not allow access to users not in team hierarchy
   public static Team TEAM21; // Team under Team2
 
+  public static User DATA_STEWARD;
+  public static Persona DATA_ENGINEER;
+  public static Persona DATA_SCIENTIST;
+
+  public static Document ACTIVITY_FEED_KNOWLEDGE_PANEL;
+  public static Document MY_DATA_KNOWLEDGE_PANEL;
   public static User USER_WITH_DATA_STEWARD_ROLE;
   public static Role DATA_STEWARD_ROLE;
   public static EntityReference DATA_STEWARD_ROLE_REF;
-  public static User USER_WITH_DATA_CONSUMER_ROLE;
+  public static User DATA_CONSUMER;
   public static Role DATA_CONSUMER_ROLE;
   public static EntityReference DATA_CONSUMER_ROLE_REF;
   public static Role ROLE1;
@@ -402,6 +393,7 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
     this.supportsTags = allowedFields.contains(FIELD_TAGS);
     this.supportsSoftDelete = allowedFields.contains(FIELD_DELETED);
     this.supportsCustomExtension = allowedFields.contains(FIELD_EXTENSION);
+    this.supportsLifeCycle = allowedFields.contains(FIELD_LIFE_CYCLE);
     this.systemEntityName = systemEntityName;
   }
 
@@ -409,6 +401,7 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
   public void setup(TestInfo test) throws URISyntaxException, IOException {
     new PolicyResourceTest().setupPolicies();
     new RoleResourceTest().setupRoles(test);
+    new PersonaResourceTest().setupPersonas(test);
     new TeamResourceTest().setupTeams(test);
     new UserResourceTest().setupUsers(test);
     new DomainResourceTest().setupDomains(test);
@@ -1164,6 +1157,16 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
     fieldDeleted(change, FIELD_OWNER, USER1_REF);
     patchEntityAndCheck(entity, json, ADMIN_AUTH_HEADERS, MINOR_UPDATE, change);
     checkOwnerOwns(USER1_REF, entity.getId(), false);
+
+    // set random type as entity. Check if the ownership validate.
+    T newEntity = entity;
+    String newJson = JsonUtils.pojoToJson(newEntity);
+    newEntity.setOwner(TEST_DEFINITION1.getEntityReference());
+    fieldUpdated(change, FIELD_OWNER, TEST_DEFINITION1, USER1_REF);
+    assertResponse(
+        () -> patchEntity(newEntity.getId(), newJson, newEntity, ADMIN_AUTH_HEADERS),
+        BAD_REQUEST,
+        CatalogExceptionMessage.invalidOwnerType(TEST_DEFINITION));
   }
 
   @Test
@@ -1336,8 +1339,8 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
 
     // Admins, Owner or a User with policy can update the entity without owner
     entity = patchEntityAndCheckAuthorization(entity, ADMIN_USER_NAME, false);
-    entity = patchEntityAndCheckAuthorization(entity, USER_WITH_DATA_STEWARD_ROLE.getName(), false);
-    entity = patchEntityAndCheckAuthorization(entity, USER_WITH_DATA_CONSUMER_ROLE.getName(), false);
+    entity = patchEntityAndCheckAuthorization(entity, DATA_STEWARD.getName(), false);
+    entity = patchEntityAndCheckAuthorization(entity, DATA_CONSUMER.getName(), false);
     entity = patchEntityAndCheckAuthorization(entity, USER1.getName(), false);
 
     if (!supportsOwner) {
@@ -1356,8 +1359,8 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
     // Admin, owner (USER1) and user with DataSteward role can update the owner on entity owned by USER1.
     entity = patchEntityAndCheckAuthorization(entity, ADMIN_USER_NAME, false);
     entity = patchEntityAndCheckAuthorization(entity, USER1.getName(), false);
-    entity = patchEntityAndCheckAuthorization(entity, USER_WITH_DATA_STEWARD_ROLE.getName(), false);
-    patchEntityAndCheckAuthorization(entity, USER_WITH_DATA_CONSUMER_ROLE.getName(), true);
+    entity = patchEntityAndCheckAuthorization(entity, DATA_STEWARD.getName(), false);
+    patchEntityAndCheckAuthorization(entity, DATA_CONSUMER.getName(), true);
   }
 
   @Test
@@ -1684,13 +1687,6 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
         String indexName = jsonObject.getString("index");
         indexNamesFromResponse.add(indexName);
       }
-      for (SearchIndexDefinition.ElasticSearchIndexType elasticSearchIndexType :
-          SearchIndexDefinition.ElasticSearchIndexType.values()) {
-        // check all the indexes are created successfully
-        assertTrue(
-            indexNamesFromResponse.contains(elasticSearchIndexType.indexName),
-            "Index name not found in Elasticsearch response " + elasticSearchIndexType.indexName);
-      }
       client.close();
     }
   }
@@ -1701,9 +1697,9 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
       // create entity
       T entity = createEntity(createRequest(test), ADMIN_AUTH_HEADERS);
       EntityReference entityReference = getEntityReference(entity);
-      String indexName = IndexUtil.getIndexMappingByEntityType(entityReference.getType()).indexName;
+      IndexMapping indexMapping = Entity.getSearchRepository().getIndexMapping(entityReference.getType());
       Awaitility.await().wait(2000L);
-      SearchResponse response = getResponseFormSearch(indexName);
+      SearchResponse response = getResponseFormSearch(indexMapping.getIndexName());
       List<String> entityIds = new ArrayList<>();
       SearchHit[] hits = response.getHits().getHits();
       for (SearchHit hit : hits) {
@@ -1721,9 +1717,9 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
       // create entity
       T entity = createEntity(createRequest(test), ADMIN_AUTH_HEADERS);
       EntityReference entityReference = getEntityReference(entity);
-      String indexName = IndexUtil.getIndexMappingByEntityType(entityReference.getType()).indexName;
+      IndexMapping indexMapping = Entity.getSearchRepository().getIndexMapping(entityReference.getType());
       Awaitility.await().wait(2000L);
-      SearchResponse response = getResponseFormSearch(indexName);
+      SearchResponse response = getResponseFormSearch(indexMapping.getIndexName());
       List<String> entityIds = new ArrayList<>();
       SearchHit[] hits = response.getHits().getHits();
       for (SearchHit hit : hits) {
@@ -1737,8 +1733,9 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
       WebTarget target = getResource(entity.getId());
       TestUtils.delete(target, entityClass, ADMIN_AUTH_HEADERS);
       // search again in search after deleting
+
       Awaitility.await().wait(2000L);
-      response = getResponseFormSearch(indexName);
+      response = getResponseFormSearch(indexMapping.getIndexName());
       hits = response.getHits().getHits();
       for (SearchHit hit : hits) {
         Map<String, Object> sourceAsMap = hit.getSourceAsMap();
@@ -1754,13 +1751,13 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
     if (supportsSearchIndex && RUN_ELASTIC_SEARCH_TESTCASES) {
       T entity = createEntity(createRequest(test), ADMIN_AUTH_HEADERS);
       EntityReference entityReference = getEntityReference(entity);
-      String indexName = IndexUtil.getIndexMappingByEntityType(entityReference.getType()).indexName;
+      IndexMapping indexMapping = Entity.getSearchRepository().getIndexMapping(entityReference.getType());
       String desc = "";
       String original = JsonUtils.pojoToJson(entity);
       entity.setDescription("update description");
       entity = patchEntity(entity.getId(), original, entity, ADMIN_AUTH_HEADERS);
       Awaitility.await().wait(2000L);
-      SearchResponse response = getResponseFormSearch(indexName);
+      SearchResponse response = getResponseFormSearch(indexMapping.getIndexName());
       SearchHit[] hits = response.getHits().getHits();
       for (SearchHit hit : hits) {
         Map<String, Object> sourceAsMap = hit.getSourceAsMap();
@@ -1781,7 +1778,7 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
       // create an entity
       T entity = createEntity(createRequest(test), ADMIN_AUTH_HEADERS);
       EntityReference entityReference = getEntityReference(entity);
-      String indexName = IndexUtil.getIndexMappingByEntityType(entityReference.getType()).indexName;
+      IndexMapping indexMapping = Entity.getSearchRepository().getIndexMapping(entityReference.getType());
       String origJson = JsonUtils.pojoToJson(entity);
       TagResourceTest tagResourceTest = new TagResourceTest();
       Tag tag = tagResourceTest.createEntity(tagResourceTest.createRequest(test), ADMIN_AUTH_HEADERS);
@@ -1792,7 +1789,7 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
       // add tags to entity
       entity = patchEntity(entity.getId(), origJson, entity, ADMIN_AUTH_HEADERS);
       Awaitility.await().wait(2000L);
-      SearchResponse response = getResponseFormSearch(indexName);
+      SearchResponse response = getResponseFormSearch(indexMapping.getIndexName());
       SearchHit[] hits = response.getHits().getHits();
       for (SearchHit hit : hits) {
         Map<String, Object> sourceAsMap = hit.getSourceAsMap();
@@ -1809,7 +1806,7 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
       // delete the tag
       tagResourceTest.deleteEntity(tag.getId(), false, true, ADMIN_AUTH_HEADERS);
       Awaitility.await().wait(2000L);
-      response = getResponseFormSearch(indexName);
+      response = getResponseFormSearch(indexMapping.getIndexName());
       hits = response.getHits().getHits();
       for (SearchHit hit : hits) {
         Map<String, Object> sourceAsMap = hit.getSourceAsMap();
@@ -1825,6 +1822,48 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
     }
   }
 
+  @Test
+  void postPutPatch_entityLifeCycle(TestInfo test) throws IOException {
+    if (!supportsLifeCycle) {
+      return;
+    }
+    LifeCycle lifeCycle =
+        new LifeCycle().withAccessed(new AccessDetails().withTimestamp(1695059900L).withAccessedBy(USER1_REF));
+    T entity =
+        createEntity(
+            createRequest(getEntityName(test), "description", null, null).withLifeCycle(lifeCycle), ADMIN_AUTH_HEADERS);
+    assertLifeCycle(lifeCycle, entity.getLifeCycle());
+    T entity1 = getEntity(entity.getId(), "lifeCycle", ADMIN_AUTH_HEADERS);
+    assertLifeCycle(lifeCycle, entity1.getLifeCycle());
+
+    String json = JsonUtils.pojoToJson(entity);
+    lifeCycle.setCreated(new AccessDetails().withTimestamp(1695059500L).withAccessedBy(USER2_REF));
+    entity.setLifeCycle(lifeCycle);
+    T patchEntity = patchEntity(entity.getId(), json, entity, ADMIN_AUTH_HEADERS);
+    assertLifeCycle(lifeCycle, patchEntity.getLifeCycle());
+    entity1 = getEntity(entity.getId(), "lifeCycle", ADMIN_AUTH_HEADERS);
+    assertLifeCycle(lifeCycle, entity1.getLifeCycle());
+
+    json = JsonUtils.pojoToJson(entity1);
+    lifeCycle.setUpdated(new AccessDetails().withTimestamp(1695059910L).withAccessedByAProcess("test"));
+    entity1.setLifeCycle(lifeCycle);
+    patchEntity = patchEntity(entity1.getId(), json, entity1, ADMIN_AUTH_HEADERS);
+    assertLifeCycle(lifeCycle, patchEntity.getLifeCycle());
+    entity1 = getEntity(patchEntity.getId(), "lifeCycle", ADMIN_AUTH_HEADERS);
+    assertLifeCycle(lifeCycle, entity1.getLifeCycle());
+
+    // set createdAt to older time , this shouldn't be overriding
+    LifeCycle lifeCycle1 =
+        new LifeCycle().withCreated(new AccessDetails().withTimestamp(1695059400L).withAccessedByAProcess("test12"));
+    json = JsonUtils.pojoToJson(entity1);
+    entity1.setLifeCycle(lifeCycle1);
+    patchEntity = patchEntity(entity1.getId(), json, entity1, ADMIN_AUTH_HEADERS);
+    // check against the older lifecycle, the contents should be unmodified
+    assertLifeCycle(lifeCycle, patchEntity.getLifeCycle());
+    entity1 = getEntity(patchEntity.getId(), "lifeCycle", ADMIN_AUTH_HEADERS);
+    assertLifeCycle(lifeCycle, entity1.getLifeCycle());
+  }
+
   private static List<NamedXContentRegistry.Entry> getDefaultNamedXContents() {
     Map<String, ContextParser<Object, ? extends Aggregation>> map = new HashMap<>();
     map.put(TopHitsAggregationBuilder.NAME, (p, c) -> ParsedTopHits.fromXContent(p, (String) c));
@@ -1837,7 +1876,8 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
   }
 
   private static SearchResponse getResponseFormSearch(String indexName) throws HttpResponseException {
-    WebTarget target = getResource(String.format("search/query?q=&index=%s&from=0&deleted=false&size=50", indexName));
+    WebTarget target =
+        getResource(String.format("elasticsearch/query?q=&index=%s&from=0&deleted=false&size=50", indexName));
     String result = TestUtils.get(target, String.class, ADMIN_AUTH_HEADERS);
     SearchResponse response = null;
     try {
@@ -2427,6 +2467,10 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
       actualTags.forEach(tagLabel -> assertNotNull(tagLabel.getDescription()));
     } else if (fieldName.startsWith("extension")) { // Custom properties related extension field changes
       assertEquals(expected.toString(), actual.toString());
+    } else if (fieldName.equals("domainType")) { // Custom properties related extension field changes
+      assertEquals(expected, DomainType.fromValue(actual.toString()));
+    } else if (fieldName.equals("style")) {
+      assertStyle((Style) expected, JsonUtils.readValue(actual.toString(), Style.class));
     } else {
       // All the other fields
       assertEquals(expected, actual, "Field name " + fieldName);
@@ -2604,6 +2648,15 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
           actualList.stream().filter(a -> EntityUtil.entityReferenceMatch.test(a, expected)).findAny().orElse(null);
       assertNotNull(actual, "Expected entity reference " + expected.getId() + " not found");
     }
+  }
+
+  protected void assertEntityReference(EntityReference expected, EntityReference actual) {
+    assertEquals(expected.getId(), actual.getId());
+    assertEquals(expected.getName(), actual.getName());
+    assertEquals(expected.getDescription(), actual.getDescription());
+    assertEquals(expected.getType(), actual.getType());
+    assertEquals(expected.getDisplayName(), actual.getDisplayName());
+    assertEquals(expected.getDeleted(), actual.getDeleted());
   }
 
   protected void assertEntityReferencesContain(List<EntityReference> list, EntityReference reference) {
@@ -2796,5 +2849,39 @@ public abstract class EntityResourceTest<T extends EntityInterface, K extends Cr
     assertReference(newDomain, entity.getDomain()); // Domain remains the same
     entity = getEntityByName(entity.getFullyQualifiedName(), "domain", ADMIN_AUTH_HEADERS);
     assertReference(newDomain, entity.getDomain()); // Domain remains the same
+  }
+
+  public static void assertLifeCycle(LifeCycle expected, LifeCycle actual) {
+    if (expected == null) {
+      assertNull(actual);
+    } else {
+      if (expected.getAccessed() != null) {
+        assertEquals(expected.getAccessed().getTimestamp(), actual.getAccessed().getTimestamp());
+        if (expected.getAccessed().getAccessedBy() != null) {
+          assertReference(
+              expected.getAccessed().getAccessedBy(),
+              JsonUtils.convertValue(actual.getAccessed().getAccessedBy(), EntityReference.class));
+        }
+        assertEquals(expected.getAccessed().getAccessedByAProcess(), actual.getAccessed().getAccessedByAProcess());
+      }
+      if (expected.getCreated() != null) {
+        assertEquals(expected.getCreated().getTimestamp(), actual.getCreated().getTimestamp());
+        if (expected.getCreated().getAccessedBy() != null) {
+          assertReference(
+              expected.getCreated().getAccessedBy(),
+              JsonUtils.convertValue(actual.getCreated().getAccessedBy(), EntityReference.class));
+        }
+        assertEquals(expected.getCreated().getAccessedByAProcess(), actual.getCreated().getAccessedByAProcess());
+      }
+      if (expected.getUpdated() != null) {
+        assertEquals(expected.getUpdated().getTimestamp(), actual.getUpdated().getTimestamp());
+        if (expected.getUpdated().getAccessedBy() != null) {
+          assertReference(
+              expected.getUpdated().getAccessedBy(),
+              JsonUtils.convertValue(actual.getUpdated().getAccessedBy(), EntityReference.class));
+          assertEquals(expected.getUpdated().getAccessedByAProcess(), actual.getUpdated().getAccessedByAProcess());
+        }
+      }
+    }
   }
 }

@@ -13,17 +13,17 @@
 
 import { Space, Tooltip, Typography } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
-import NextPrevious from 'components/common/next-previous/NextPrevious';
-import Table from 'components/common/Table/Table';
 import cronstrue from 'cronstrue';
-import { Paging } from 'generated/type/paging';
 import { isNil } from 'lodash';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getEntityName } from 'utils/EntityUtils';
-import { getErrorPlaceHolder } from 'utils/IngestionUtils';
+import NextPrevious from '../../components/common/next-previous/NextPrevious';
+import { PagingHandlerParams } from '../../components/common/next-previous/NextPrevious.interface';
+import Table from '../../components/common/Table/Table';
 import { PAGE_SIZE } from '../../constants/constants';
 import { IngestionPipeline } from '../../generated/entity/services/ingestionPipelines/ingestionPipeline';
+import { getEntityName } from '../../utils/EntityUtils';
+import { getErrorPlaceHolder } from '../../utils/IngestionUtils';
 import { IngestionListTableProps } from './IngestionListTable.interface';
 import { IngestionRecentRuns } from './IngestionRecentRun/IngestionRecentRuns.component';
 import PipelineActions from './PipelineActions.component';
@@ -50,14 +50,16 @@ function IngestionListTable({
   const { t } = useTranslation();
   const [ingestionCurrentPage, setIngestionCurrentPage] = useState(1);
 
-  const ingestionPagingHandler = (
-    cursorType: string | number,
-    activePage?: number
-  ) => {
-    const pagingString = `&${cursorType}=${paging[cursorType as keyof Paging]}`;
+  const ingestionPagingHandler = ({
+    cursorType,
+    currentPage,
+  }: PagingHandlerParams) => {
+    if (cursorType) {
+      const pagingString = `&${cursorType}=${paging[cursorType]}`;
 
-    onIngestionWorkflowsUpdate(pagingString);
-    setIngestionCurrentPage(activePage ?? 1);
+      onIngestionWorkflowsUpdate(pagingString);
+      setIngestionCurrentPage(currentPage);
+    }
   };
 
   const renderNameField = (text: string, record: IngestionPipeline) => {

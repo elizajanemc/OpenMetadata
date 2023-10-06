@@ -11,27 +11,30 @@
  *  limitations under the License.
  */
 import { Space } from 'antd';
-import ProfilePicture from 'components/common/ProfilePicture/ProfilePicture';
-import { getUserPath, NO_DATA_PLACEHOLDER } from 'constants/constants';
-import { EntityField } from 'constants/Feeds.constants';
-import { EntityChangeOperations } from 'enums/VersionPage.enum';
-import { ChangeDescription, EntityReference } from 'generated/entity/type';
 import { isEmpty, isUndefined } from 'lodash';
 import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { getEntityName } from 'utils/EntityUtils';
+import ProfilePicture from '../../../components/common/ProfilePicture/ProfilePicture';
+import { getUserPath, NO_DATA_PLACEHOLDER } from '../../../constants/constants';
+import { EntityField } from '../../../constants/Feeds.constants';
+import { EntityChangeOperations } from '../../../enums/VersionPage.enum';
+import {
+  ChangeDescription,
+  EntityReference,
+} from '../../../generated/entity/type';
+import { getEntityName } from '../../../utils/EntityUtils';
 import {
   getAddedDiffElement,
   getChangedEntityNewValue,
   getChangedEntityOldValue,
   getDiffByFieldName,
   getRemovedDiffElement,
-} from 'utils/EntityVersionUtils';
+} from '../../../utils/EntityVersionUtils';
 import { DomainExpertsProps } from './DomainExperts.interface';
 
 function DomainExperts({
   isVersionsView,
-  domain,
+  entity,
   editPermission,
 }: DomainExpertsProps) {
   const getExpertName = useCallback(
@@ -53,7 +56,7 @@ function DomainExperts({
     []
   );
 
-  const getReviewer = useCallback(
+  const getExpert = useCallback(
     (expert: EntityReference, operation: EntityChangeOperations) => {
       return (
         <Space className="m-r-xss" key={expert.id} size={4}>
@@ -74,54 +77,54 @@ function DomainExperts({
   );
 
   if (isVersionsView) {
-    const changeDescription = domain.changeDescription;
-    const reviewersDiff = getDiffByFieldName(
-      EntityField.REVIEWERS,
+    const changeDescription = entity.changeDescription;
+    const expertsDiff = getDiffByFieldName(
+      EntityField.EXPERTS,
       changeDescription as ChangeDescription
     );
 
-    const addedReviewers: EntityReference[] = JSON.parse(
-      getChangedEntityNewValue(reviewersDiff) ?? '[]'
+    const addedExperts: EntityReference[] = JSON.parse(
+      getChangedEntityNewValue(expertsDiff) ?? '[]'
     );
-    const deletedReviewers: EntityReference[] = JSON.parse(
-      getChangedEntityOldValue(reviewersDiff) ?? '[]'
+    const deletedExperts: EntityReference[] = JSON.parse(
+      getChangedEntityOldValue(expertsDiff) ?? '[]'
     );
 
-    const unchangedReviewers = domain.experts
-      ? domain.experts.filter(
+    const unchangedExperts = entity.experts
+      ? entity.experts.filter(
           (expert) =>
-            !addedReviewers.find(
+            !addedExperts.find(
               (addedReviewer: EntityReference) => addedReviewer.id === expert.id
             )
         )
       : [];
 
     if (
-      !isEmpty(unchangedReviewers) ||
-      !isEmpty(addedReviewers) ||
-      !isEmpty(deletedReviewers)
+      !isEmpty(unchangedExperts) ||
+      !isEmpty(addedExperts) ||
+      !isEmpty(deletedExperts)
     ) {
       return (
         <>
-          {unchangedReviewers.map((expert) =>
-            getReviewer(expert, EntityChangeOperations.NORMAL)
+          {unchangedExperts.map((expert) =>
+            getExpert(expert, EntityChangeOperations.NORMAL)
           )}
-          {addedReviewers.map((expert) =>
-            getReviewer(expert, EntityChangeOperations.ADDED)
+          {addedExperts.map((expert) =>
+            getExpert(expert, EntityChangeOperations.ADDED)
           )}
-          {deletedReviewers.map((expert) =>
-            getReviewer(expert, EntityChangeOperations.DELETED)
+          {deletedExperts.map((expert) =>
+            getExpert(expert, EntityChangeOperations.DELETED)
           )}
         </>
       );
     }
   }
 
-  if (!isEmpty(domain.experts) && !isUndefined(domain.experts)) {
+  if (!isEmpty(entity.experts) && !isUndefined(entity.experts)) {
     return (
-      <Space wrap data-testid="glossary-expert-name" size={6}>
-        {domain.experts.map((expert) =>
-          getReviewer(expert, EntityChangeOperations.NORMAL)
+      <Space wrap data-testid="domain-expert-name-heading" size={6}>
+        {entity.experts.map((expert) =>
+          getExpert(expert, EntityChangeOperations.NORMAL)
         )}
       </Space>
     );

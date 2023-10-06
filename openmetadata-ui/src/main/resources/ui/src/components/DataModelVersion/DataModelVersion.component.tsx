@@ -13,25 +13,25 @@
 
 import { Col, Row, Space, Tabs, TabsProps } from 'antd';
 import classNames from 'classnames';
-import DescriptionV1 from 'components/common/description/DescriptionV1';
-import DataAssetsVersionHeader from 'components/DataAssets/DataAssetsVersionHeader/DataAssetsVersionHeader';
-import EntityVersionTimeLine from 'components/Entity/EntityVersionTimeLine/EntityVersionTimeLine';
-import TabsLabel from 'components/TabsLabel/TabsLabel.component';
-import TagsContainerV2 from 'components/Tag/TagsContainerV2/TagsContainerV2';
-import VersionTable from 'components/VersionTable/VersionTable.component';
-import { EntityTabs, EntityType, FqnPart } from 'enums/entity.enum';
+import { cloneDeep } from 'lodash';
+import React, { FC, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import DescriptionV1 from '../../components/common/description/DescriptionV1';
+import DataAssetsVersionHeader from '../../components/DataAssets/DataAssetsVersionHeader/DataAssetsVersionHeader';
+import EntityVersionTimeLine from '../../components/Entity/EntityVersionTimeLine/EntityVersionTimeLine';
+import TabsLabel from '../../components/TabsLabel/TabsLabel.component';
+import TagsContainerV2 from '../../components/Tag/TagsContainerV2/TagsContainerV2';
+import VersionTable from '../../components/VersionTable/VersionTable.component';
+import { FQN_SEPARATOR_CHAR } from '../../constants/char.constants';
+import { EntityField } from '../../constants/Feeds.constants';
+import { EntityTabs, EntityType, FqnPart } from '../../enums/entity.enum';
 import {
   ChangeDescription,
   Column,
   DashboardDataModel,
-} from 'generated/entity/data/dashboardDataModel';
-import { TagSource } from 'generated/type/schema';
-import { cloneDeep } from 'lodash';
-import React, { FC, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { getPartialNameFromTableFQN } from 'utils/CommonUtils';
-import { FQN_SEPARATOR_CHAR } from '../../constants/char.constants';
-import { EntityField } from '../../constants/Feeds.constants';
+} from '../../generated/entity/data/dashboardDataModel';
+import { TagSource } from '../../generated/type/schema';
+import { getPartialNameFromTableFQN } from '../../utils/CommonUtils';
 import {
   getColumnsDataWithVersionChanges,
   getCommonExtraInfoForVersionDetails,
@@ -46,6 +46,7 @@ const DataModelVersion: FC<DataModelVersionProp> = ({
   currentVersionData,
   isVersionLoading,
   owner,
+  domain,
   tier,
   slashedDataModelName,
   versionList,
@@ -59,10 +60,17 @@ const DataModelVersion: FC<DataModelVersionProp> = ({
     currentVersionData.changeDescription as ChangeDescription
   );
 
-  const { ownerDisplayName, ownerRef, tierDisplayName } = useMemo(
-    () => getCommonExtraInfoForVersionDetails(changeDescription, owner, tier),
-    [changeDescription, owner, tier]
-  );
+  const { ownerDisplayName, ownerRef, tierDisplayName, domainDisplayName } =
+    useMemo(
+      () =>
+        getCommonExtraInfoForVersionDetails(
+          changeDescription,
+          owner,
+          tier,
+          domain
+        ),
+      [changeDescription, owner, tier, domain]
+    );
 
   const columns: DashboardDataModel['columns'] = useMemo(() => {
     const colList = cloneDeep(
@@ -167,6 +175,7 @@ const DataModelVersion: FC<DataModelVersionProp> = ({
                   currentVersionData={currentVersionData}
                   deleted={deleted}
                   displayName={displayName}
+                  domainDisplayName={domainDisplayName}
                   entityType={EntityType.DASHBOARD_DATA_MODEL}
                   ownerDisplayName={ownerDisplayName}
                   ownerRef={ownerRef}

@@ -13,11 +13,12 @@
 
 import { AxiosResponse } from 'axios';
 import { Operation } from 'fast-json-patch';
-import { EntityHistory } from 'generated/type/entityHistory';
-import { Include } from 'generated/type/include';
 import { PagingWithoutTotal, RestoreRequestType } from 'Models';
+import { QueryVote } from '../components/TableQueries/TableQueries.interface';
 import { Database } from '../generated/entity/data/database';
 import { DatabaseSchema } from '../generated/entity/data/databaseSchema';
+import { EntityHistory } from '../generated/type/entityHistory';
+import { Include } from '../generated/type/include';
 import { Paging } from '../generated/type/paging';
 import { getURLWithQueryFields } from '../utils/APIUtils';
 import APIClient from './index';
@@ -193,6 +194,27 @@ export const getDatabaseSchemaVersionData = async (
   const url = `/databaseSchemas/${id}/versions/${version}`;
 
   const response = await APIClient.get<DatabaseSchema>(url);
+
+  return response.data;
+};
+
+export const updateDatabaseSchemaVotes = async (
+  id: string,
+  data: QueryVote
+) => {
+  const response = await APIClient.put<
+    QueryVote,
+    AxiosResponse<DatabaseSchema>
+  >(`/databaseSchemas/${id}/vote`, data);
+
+  return response.data;
+};
+
+export const updateDatabaseVotes = async (id: string, data: QueryVote) => {
+  const response = await APIClient.put<QueryVote, AxiosResponse<Database>>(
+    `databases/${id}/vote`,
+    data
+  );
 
   return response.data;
 };

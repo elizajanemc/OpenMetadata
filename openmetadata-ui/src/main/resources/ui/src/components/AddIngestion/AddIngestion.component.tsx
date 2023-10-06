@@ -12,12 +12,12 @@
  */
 
 import { Form, Input, Typography } from 'antd';
-import IngestionWorkflowForm from 'components/IngestionWorkflowForm/IngestionWorkflowForm';
-import { LOADING_STATE } from 'enums/common.enum';
 import { isEmpty, isUndefined, omit, trim } from 'lodash';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import IngestionWorkflowForm from '../../components/IngestionWorkflowForm/IngestionWorkflowForm';
 import { STEPS_FOR_ADD_INGESTION } from '../../constants/Ingestions.constant';
+import { LOADING_STATE } from '../../enums/common.enum';
 import { FormSubmitType } from '../../enums/form.enum';
 import {
   CreateIngestionPipeline,
@@ -26,12 +26,12 @@ import {
 } from '../../generated/api/services/ingestionPipelines/createIngestionPipeline';
 import { IngestionPipeline } from '../../generated/entity/services/ingestionPipelines/ingestionPipeline';
 
-import { IngestionWorkflowData } from 'interface/service.interface';
-import { getIngestionName } from 'utils/ServiceUtils';
+import { IngestionWorkflowData } from '../../interface/service.interface';
 import {
   getCurrentUserId,
   getIngestionFrequency,
 } from '../../utils/CommonUtils';
+import { getIngestionName } from '../../utils/ServiceUtils';
 import SuccessScreen from '../common/success-screen/SuccessScreen';
 import IngestionStepper from '../IngestionStepper/IngestionStepper.component';
 import DeployIngestionLoaderModal from '../Modals/DeployIngestionLoaderModal/DeployIngestionLoaderModal';
@@ -66,15 +66,23 @@ const AddIngestion = ({
 }: AddIngestionProps) => {
   const { t } = useTranslation();
 
+  // lazy initialization to initialize the data only once
+  const [workflowData, setWorkflowData] = useState<IngestionWorkflowData>(
+    () => ({
+      ...(data?.sourceConfig.config ?? {}),
+      name: data?.name ?? getIngestionName(serviceData.name, pipelineType),
+      enableDebugLog: data?.loggerLevel === LogLevels.Debug,
+    })
+  );
+
   const [scheduleInterval, setScheduleInterval] = useState(
     () =>
       data?.airflowConfig.scheduleInterval ??
       getIngestionFrequency(pipelineType)
   );
 
-  const { sourceConfig, ingestionName, retries } = useMemo(
+  const { ingestionName, retries } = useMemo(
     () => ({
-      sourceConfig: data?.sourceConfig.config,
       ingestionName:
         data?.name ?? getIngestionName(serviceData.name, pipelineType),
       retries: data?.airflowConfig.retries ?? 0,
@@ -105,7 +113,8 @@ const AddIngestion = ({
   );
   const [showDeployModal, setShowDeployModal] = useState(false);
 
-  const [workflowData, setWorkflowData] = useState<IngestionWorkflowData>();
+  const handleDataChange = (data: IngestionWorkflowData) =>
+    setWorkflowData(data);
 
   const handleNext = (step: number) => {
     setActiveIngestionStep(step);
@@ -274,14 +283,13 @@ const AddIngestion = ({
       <div className="p-t-lg">
         {activeIngestionStep === 1 && (
           <IngestionWorkflowForm
-            enableDebugLog={data?.loggerLevel === LogLevels.Debug}
             okText={t('label.next')}
             operationType={status}
             pipeLineType={pipelineType}
             serviceCategory={serviceCategory}
-            workflowData={sourceConfig ?? {}}
-            workflowName={ingestionName}
+            workflowData={workflowData}
             onCancel={handleCancelClick}
+            onChange={handleDataChange}
             onFocus={onFocus}
             onSubmit={handleSubmit}
           />

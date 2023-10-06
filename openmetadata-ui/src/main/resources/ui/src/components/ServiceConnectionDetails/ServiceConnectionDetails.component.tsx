@@ -18,10 +18,8 @@
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { Card, Col, Row, Space, Tooltip } from 'antd';
 import Input from 'antd/lib/input/Input';
-import { StorageServiceType } from 'generated/entity/services/storageService';
 import { get, isEmpty, isNull, isObject } from 'lodash';
 import React, { ReactNode, useEffect, useState } from 'react';
-import { getStorageServiceConfig } from 'utils/StorageServiceUtils';
 import { DEF_UI_SCHEMA, JWT_CONFIG } from '../../constants/Services.constant';
 import { EntityType } from '../../enums/entity.enum';
 import { DashboardServiceType } from '../../generated/entity/services/dashboardService';
@@ -30,6 +28,8 @@ import { MessagingServiceType } from '../../generated/entity/services/messagingS
 import { MetadataServiceType } from '../../generated/entity/services/metadataService';
 import { MlModelServiceType } from '../../generated/entity/services/mlmodelService';
 import { PipelineServiceType } from '../../generated/entity/services/pipelineService';
+import { SearchServiceType } from '../../generated/entity/services/searchService';
+import { StorageServiceType } from '../../generated/entity/services/storageService';
 import { ConfigData } from '../../interface/service.interface';
 import { getDashboardConfig } from '../../utils/DashboardServiceUtils';
 import { getDatabaseConfig } from '../../utils/DatabaseServiceUtils';
@@ -37,6 +37,8 @@ import { getMessagingConfig } from '../../utils/MessagingServiceUtils';
 import { getMetadataConfig } from '../../utils/MetadataServiceUtils';
 import { getMlmodelConfig } from '../../utils/MlmodelServiceUtils';
 import { getPipelineConfig } from '../../utils/PipelineServiceUtils';
+import { getSearchServiceConfig } from '../../utils/SearchServiceUtils';
+import { getStorageServiceConfig } from '../../utils/StorageServiceUtils';
 
 type ServiceConnectionDetailsProps = {
   connectionDetails: ConfigData;
@@ -236,6 +238,12 @@ const ServiceConnectionDetails = ({
       case EntityType.STORAGE_SERVICE:
         setSchema(
           getStorageServiceConfig(serviceFQN as StorageServiceType).schema
+        );
+
+        break;
+      case EntityType.SEARCH_SERVICE:
+        setSchema(
+          getSearchServiceConfig(serviceFQN as SearchServiceType).schema
         );
     }
   }, [serviceCategory, serviceFQN]);

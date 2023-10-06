@@ -13,67 +13,73 @@
 
 import { Col, Row, Tabs, TabsProps } from 'antd';
 import classNames from 'classnames';
-import ErrorPlaceHolder from 'components/common/error-with-placeholder/ErrorPlaceHolder';
-import PageLayoutV1 from 'components/containers/PageLayoutV1';
-import DataAssetsVersionHeader from 'components/DataAssets/DataAssetsVersionHeader/DataAssetsVersionHeader';
-import EntityVersionTimeLine from 'components/Entity/EntityVersionTimeLine/EntityVersionTimeLine';
-import Loader from 'components/Loader/Loader';
-import { usePermissionProvider } from 'components/PermissionProvider/PermissionProvider';
-import { OperationPermission } from 'components/PermissionProvider/PermissionProvider.interface';
-import TabsLabel from 'components/TabsLabel/TabsLabel.component';
+import { isEmpty, toString } from 'lodash';
+import { PagingWithoutTotal, ServiceTypes } from 'Models';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useHistory, useParams } from 'react-router-dom';
+import ErrorPlaceHolder from '../../components/common/error-with-placeholder/ErrorPlaceHolder';
+import { PagingHandlerParams } from '../../components/common/next-previous/NextPrevious.interface';
+import PageLayoutV1 from '../../components/containers/PageLayoutV1';
+import DataAssetsVersionHeader from '../../components/DataAssets/DataAssetsVersionHeader/DataAssetsVersionHeader';
+import EntityVersionTimeLine from '../../components/Entity/EntityVersionTimeLine/EntityVersionTimeLine';
+import Loader from '../../components/Loader/Loader';
+import { usePermissionProvider } from '../../components/PermissionProvider/PermissionProvider';
+import { OperationPermission } from '../../components/PermissionProvider/PermissionProvider.interface';
+import TabsLabel from '../../components/TabsLabel/TabsLabel.component';
 import {
   getServiceDetailsPath,
   INITIAL_PAGING_VALUE,
   pagingObject,
-} from 'constants/constants';
-import { EntityField } from 'constants/Feeds.constants';
-import { ERROR_PLACEHOLDER_TYPE } from 'enums/common.enum';
-import { ServiceCategory } from 'enums/service.enum';
-import { ChangeDescription } from 'generated/entity/type';
-import { EntityHistory } from 'generated/type/entityHistory';
-import { Include } from 'generated/type/include';
-import { Paging } from 'generated/type/paging';
-import { ServicesType } from 'interface/service.interface';
-import { isEmpty, toString } from 'lodash';
-import { PagingWithoutTotal, ServiceTypes } from 'Models';
-import { ServicePageData } from 'pages/ServiceDetailsPage/ServiceDetailsPage';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useHistory, useParams } from 'react-router-dom';
-import { getDashboards } from 'rest/dashboardAPI';
-import { getDatabases } from 'rest/databaseAPI';
-import { getMlModels } from 'rest/mlModelAPI';
-import { getPipelines } from 'rest/pipelineAPI';
+} from '../../constants/constants';
+import { EntityField } from '../../constants/Feeds.constants';
+import { ERROR_PLACEHOLDER_TYPE } from '../../enums/common.enum';
+import { ServiceCategory } from '../../enums/service.enum';
+import { ChangeDescription } from '../../generated/entity/type';
+import { EntityHistory } from '../../generated/type/entityHistory';
+import { Include } from '../../generated/type/include';
+import { Paging } from '../../generated/type/paging';
+import { ServicesType } from '../../interface/service.interface';
+import { ServicePageData } from '../../pages/ServiceDetailsPage/ServiceDetailsPage';
+import { getDashboards } from '../../rest/dashboardAPI';
+import { getDatabases } from '../../rest/databaseAPI';
+import { getMlModels } from '../../rest/mlModelAPI';
+import { getPipelines } from '../../rest/pipelineAPI';
+import { getSearchIndexes } from '../../rest/SearchIndexAPI';
 import {
   getServiceByFQN,
   getServiceVersionData,
   getServiceVersions,
-} from 'rest/serviceAPI';
-import { getContainers } from 'rest/storageAPI';
-import { getTopics } from 'rest/topicsAPI';
-import { getEntityName } from 'utils/EntityUtils';
+} from '../../rest/serviceAPI';
+import { getContainers } from '../../rest/storageAPI';
+import { getTopics } from '../../rest/topicsAPI';
+import { getEntityName } from '../../utils/EntityUtils';
 import {
   getBasicEntityInfoFromVersionData,
   getCommonExtraInfoForVersionDetails,
   getEntityVersionByField,
-} from 'utils/EntityVersionUtils';
-import { DEFAULT_ENTITY_PERMISSION } from 'utils/PermissionsUtils';
-import { getServiceVersionPath } from 'utils/RouterUtils';
+} from '../../utils/EntityVersionUtils';
+import { DEFAULT_ENTITY_PERMISSION } from '../../utils/PermissionsUtils';
+import { getServiceVersionPath } from '../../utils/RouterUtils';
 import {
   getCountLabel,
   getEntityTypeFromServiceCategory,
   getResourceEntityFromServiceCategory,
-} from 'utils/ServiceUtils';
-import { getDecodedFqn } from 'utils/StringsUtils';
+} from '../../utils/ServiceUtils';
+import { getDecodedFqn } from '../../utils/StringsUtils';
 import ServiceVersionMainTabContent from './ServiceVersionMainTabContent';
 
 function ServiceVersionPage() {
   const { t } = useTranslation();
   const history = useHistory();
   const { getEntityPermissionByFqn } = usePermissionProvider();
-  const { serviceCategory, serviceFQN, version } = useParams<{
+  const {
+    serviceCategory,
+    fqn: serviceFQN,
+    version,
+  } = useParams<{
     serviceCategory: ServiceTypes;
-    serviceFQN: string;
+    fqn: string;
     version: string;
   }>();
   const [paging, setPaging] = useState<Paging>(pagingObject);
@@ -101,25 +107,28 @@ function ServiceVersionPage() {
     [serviceCategory]
   );
 
-  const { tier, owner, breadcrumbLinks, changeDescription, deleted } = useMemo(
-    () => getBasicEntityInfoFromVersionData(currentVersionData, entityType),
-    [currentVersionData, entityType]
-  );
+  const { tier, owner, breadcrumbLinks, changeDescription, deleted, domain } =
+    useMemo(
+      () => getBasicEntityInfoFromVersionData(currentVersionData, entityType),
+      [currentVersionData, entityType]
+    );
 
   const viewVersionPermission = useMemo(
     () => servicePermissions.ViewAll || servicePermissions.ViewBasic,
     [servicePermissions]
   );
 
-  const { ownerDisplayName, ownerRef, tierDisplayName } = useMemo(
-    () =>
-      getCommonExtraInfoForVersionDetails(
-        currentVersionData.changeDescription as ChangeDescription,
-        owner,
-        tier
-      ),
-    [currentVersionData.changeDescription, owner, tier]
-  );
+  const { ownerDisplayName, ownerRef, tierDisplayName, domainDisplayName } =
+    useMemo(
+      () =>
+        getCommonExtraInfoForVersionDetails(
+          currentVersionData.changeDescription as ChangeDescription,
+          owner,
+          tier,
+          domain
+        ),
+      [currentVersionData.changeDescription, owner, tier, domain]
+    );
 
   const fetchResourcePermission = useCallback(async () => {
     try {
@@ -237,6 +246,22 @@ function ServiceVersionPage() {
     [serviceFQN]
   );
 
+  const fetchSearchIndexes = useCallback(
+    async (paging?: PagingWithoutTotal) => {
+      const response = await getSearchIndexes({
+        service: getDecodedFqn(serviceFQN),
+        fields: 'owner,tags',
+        paging,
+        root: true,
+        include: Include.NonDeleted,
+      });
+
+      setData(response.data);
+      setPaging(response.paging);
+    },
+    [serviceFQN]
+  );
+
   const getOtherDetails = useCallback(
     async (paging?: PagingWithoutTotal) => {
       try {
@@ -269,6 +294,11 @@ function ServiceVersionPage() {
           }
           case ServiceCategory.STORAGE_SERVICES: {
             await fetchContainers(paging);
+
+            break;
+          }
+          case ServiceCategory.SEARCH_SERVICES: {
+            await fetchSearchIndexes(paging);
 
             break;
           }
@@ -333,11 +363,13 @@ function ServiceVersionPage() {
   }, [serviceFQN, serviceCategory]);
 
   const pagingHandler = useCallback(
-    (cursorType: string | number, activePage?: number) => {
-      getOtherDetails({
-        [cursorType]: paging[cursorType as keyof typeof paging],
-      });
-      setCurrentPage(activePage ?? INITIAL_PAGING_VALUE);
+    ({ cursorType, currentPage }: PagingHandlerParams) => {
+      if (cursorType) {
+        getOtherDetails({
+          [cursorType]: paging[cursorType],
+        });
+        setCurrentPage(currentPage);
+      }
     },
     [paging, getOtherDetails]
   );
@@ -411,6 +443,7 @@ function ServiceVersionPage() {
                   currentVersionData={currentVersionData}
                   deleted={deleted}
                   displayName={displayName}
+                  domainDisplayName={domainDisplayName}
                   entityType={entityType}
                   ownerDisplayName={ownerDisplayName}
                   ownerRef={ownerRef}

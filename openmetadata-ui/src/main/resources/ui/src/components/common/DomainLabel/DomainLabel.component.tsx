@@ -12,25 +12,30 @@
  */
 import { Space, Typography } from 'antd';
 import { AxiosError } from 'axios';
-import { AssetsUnion } from 'components/Assets/AssetsSelectionModal/AssetSelectionModal.interface';
 import { compare } from 'fast-json-patch';
-import { EntityReference } from 'generated/entity/type';
+import { isUndefined } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { ReactComponent as DomainIcon } from '../../../assets/svg/ic-domain.svg';
+import { AssetsUnion } from '../../../components/Assets/AssetsSelectionModal/AssetSelectionModal.interface';
+import { DE_ACTIVE_COLOR } from '../../../constants/constants';
+import { EntityReference } from '../../../generated/entity/type';
 import {
   getAPIfromSource,
   getEntityAPIfromSource,
-} from 'utils/Assets/AssetsUtils';
-import { getEntityName } from 'utils/EntityUtils';
-import { getDomainPath } from 'utils/RouterUtils';
-import { showErrorToast } from 'utils/ToastUtils';
+} from '../../../utils/Assets/AssetsUtils';
+import { getEntityName } from '../../../utils/EntityUtils';
+import { getDomainPath } from '../../../utils/RouterUtils';
+import { showErrorToast } from '../../../utils/ToastUtils';
 import DomainSelectableList from '../DomainSelectableList/DomainSelectableList.component';
 import { DomainLabelProps } from './DomainLabel.interface';
 
 export const DomainLabel = ({
+  afterDomainUpdateAction,
   hasPermission,
   domain,
+  domainDisplayName,
   entityType,
   entityFqn,
   entityId,
@@ -58,13 +63,14 @@ export const DomainLabel = ({
 
           // update the domain details here
           setActiveDomain(res.domain);
+          !isUndefined(afterDomainUpdateAction) && afterDomainUpdateAction(res);
         }
       } catch (err) {
         // Handle errors as needed
         showErrorToast(err as AxiosError);
       }
     },
-    [entityType, entityFqn]
+    [entityType, entityFqn, afterDomainUpdateAction]
   );
 
   useEffect(() => {
@@ -75,19 +81,27 @@ export const DomainLabel = ({
     return (
       <Space>
         <Typography.Text className="self-center text-xs whitespace-nowrap">
-          <span className="text-grey-muted">{`${t('label.domain')}: `}</span>
+          <DomainIcon
+            className="d-flex"
+            color={DE_ACTIVE_COLOR}
+            height={16}
+            name="folder"
+            width={16}
+          />
         </Typography.Text>
-        {activeDomain ? (
+        {activeDomain || domainDisplayName ? (
           <Link
             className="text-primary font-medium text-xs no-underline"
-            data-testid="owner-link"
-            to={getDomainPath(activeDomain.fullyQualifiedName)}>
-            {getEntityName(activeDomain)}
+            data-testid="domain-link"
+            to={getDomainPath(activeDomain?.fullyQualifiedName)}>
+            {isUndefined(domainDisplayName)
+              ? getEntityName(activeDomain)
+              : domainDisplayName}
           </Link>
         ) : (
           <Typography.Text
             className="font-medium text-xs"
-            data-testid="owner-link">
+            data-testid="no-domain-text">
             {t('label.no-entity', { entity: t('label.domain') })}
           </Typography.Text>
         )}

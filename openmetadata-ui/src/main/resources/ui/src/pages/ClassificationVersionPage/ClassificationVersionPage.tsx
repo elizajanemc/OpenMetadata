@@ -11,43 +11,45 @@
  *  limitations under the License.
  */
 
-import ClassificationDetails from 'components/ClassificationDetails/ClassificationDetails';
-import ErrorPlaceHolder from 'components/common/error-with-placeholder/ErrorPlaceHolder';
-import PageLayoutV1 from 'components/containers/PageLayoutV1';
-import EntityVersionTimeLine from 'components/Entity/EntityVersionTimeLine/EntityVersionTimeLine';
-import Loader from 'components/Loader/Loader';
-import { usePermissionProvider } from 'components/PermissionProvider/PermissionProvider';
-import {
-  OperationPermission,
-  ResourceEntity,
-} from 'components/PermissionProvider/PermissionProvider.interface';
-import { FQN_SEPARATOR_CHAR } from 'constants/char.constants';
-import { INITIAL_PAGING_VALUE, PAGE_SIZE } from 'constants/constants';
-import { ERROR_PLACEHOLDER_TYPE } from 'enums/common.enum';
-import { Classification } from 'generated/entity/classification/classification';
-import { Tag } from 'generated/entity/classification/tag';
-import { EntityHistory } from 'generated/type/entityHistory';
-import { Paging } from 'generated/type/paging';
 import { isEmpty, toString } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory, useParams } from 'react-router-dom';
+import ClassificationDetails from '../../components/ClassificationDetails/ClassificationDetails';
+import ErrorPlaceHolder from '../../components/common/error-with-placeholder/ErrorPlaceHolder';
+import { PagingHandlerParams } from '../../components/common/next-previous/NextPrevious.interface';
+import PageLayoutV1 from '../../components/containers/PageLayoutV1';
+import EntityVersionTimeLine from '../../components/Entity/EntityVersionTimeLine/EntityVersionTimeLine';
+import Loader from '../../components/Loader/Loader';
+import { usePermissionProvider } from '../../components/PermissionProvider/PermissionProvider';
+import {
+  OperationPermission,
+  ResourceEntity,
+} from '../../components/PermissionProvider/PermissionProvider.interface';
+import { FQN_SEPARATOR_CHAR } from '../../constants/char.constants';
+import { INITIAL_PAGING_VALUE, PAGE_SIZE } from '../../constants/constants';
+import { ERROR_PLACEHOLDER_TYPE } from '../../enums/common.enum';
+import { Classification } from '../../generated/entity/classification/classification';
+import { Tag } from '../../generated/entity/classification/tag';
+import { EntityHistory } from '../../generated/type/entityHistory';
+import { Paging } from '../../generated/type/paging';
 import {
   getClassificationByName,
   getClassificationVersionData,
   getClassificationVersionsList,
   getTags,
-} from 'rest/tagAPI';
-import { DEFAULT_ENTITY_PERMISSION } from 'utils/PermissionsUtils';
+} from '../../rest/tagAPI';
+import { DEFAULT_ENTITY_PERMISSION } from '../../utils/PermissionsUtils';
 import {
   getClassificationDetailsPath,
   getClassificationVersionsPath,
-} from 'utils/RouterUtils';
+} from '../../utils/RouterUtils';
 
 function ClassificationVersionPage() {
   const { t } = useTranslation();
   const history = useHistory();
-  const { tagCategoryName = '', version } = useParams<Record<string, string>>();
+  const { fqn: tagCategoryName, version } =
+    useParams<{ fqn: string; version: string }>();
   const { getEntityPermissionByFqn } = usePermissionProvider();
   const [currentVersionData, setCurrentVersionData] = useState<Classification>(
     {} as Classification
@@ -146,14 +148,14 @@ function ClassificationVersionPage() {
   };
 
   const handlePageChange = useCallback(
-    (cursorType: string | number, activePage?: number) => {
+    ({ cursorType, currentPage }: PagingHandlerParams) => {
       if (cursorType) {
         const pagination = {
           [cursorType]: paging[cursorType as keyof Paging] as string,
           total: paging.total,
         } as Paging;
 
-        setCurrentPage(activePage ?? INITIAL_PAGING_VALUE);
+        setCurrentPage(currentPage);
         fetchClassificationChildren(classificationName, pagination);
       }
     },

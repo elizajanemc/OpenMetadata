@@ -22,33 +22,32 @@ import {
   Typography,
 } from 'antd';
 import classNames from 'classnames';
-import { CustomPropertyTable } from 'components/common/CustomPropertyTable/CustomPropertyTable';
-import { CustomPropertyProps } from 'components/common/CustomPropertyTable/CustomPropertyTable.interface';
-import DescriptionV1 from 'components/common/description/DescriptionV1';
-import ErrorPlaceHolder from 'components/common/error-with-placeholder/ErrorPlaceHolder';
-import RichTextEditorPreviewer from 'components/common/rich-text-editor/RichTextEditorPreviewer';
-import DataAssetsVersionHeader from 'components/DataAssets/DataAssetsVersionHeader/DataAssetsVersionHeader';
-import EntityVersionTimeLine from 'components/Entity/EntityVersionTimeLine/EntityVersionTimeLine';
-import SourceList from 'components/MlModelDetail/SourceList.component';
-import TabsLabel from 'components/TabsLabel/TabsLabel.component';
-import TagsContainerV2 from 'components/Tag/TagsContainerV2/TagsContainerV2';
-import TagsViewer from 'components/Tag/TagsViewer/TagsViewer';
-import { getVersionPathWithTab } from 'constants/constants';
-import { EntityTabs, EntityType } from 'enums/entity.enum';
-import { MlFeature, Mlmodel } from 'generated/entity/data/mlmodel';
-import { TagSource } from 'generated/type/tagLabel';
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory, useParams } from 'react-router-dom';
-import { getMlFeatureVersionData } from 'utils/MlModelVersionUtils';
-import { getFilterTags } from 'utils/TableTags/TableTags.utils';
+import { CustomPropertyTable } from '../../components/common/CustomPropertyTable/CustomPropertyTable';
+import DescriptionV1 from '../../components/common/description/DescriptionV1';
+import ErrorPlaceHolder from '../../components/common/error-with-placeholder/ErrorPlaceHolder';
+import RichTextEditorPreviewer from '../../components/common/rich-text-editor/RichTextEditorPreviewer';
+import DataAssetsVersionHeader from '../../components/DataAssets/DataAssetsVersionHeader/DataAssetsVersionHeader';
+import EntityVersionTimeLine from '../../components/Entity/EntityVersionTimeLine/EntityVersionTimeLine';
+import SourceList from '../../components/MlModelDetail/SourceList.component';
+import TabsLabel from '../../components/TabsLabel/TabsLabel.component';
+import TagsContainerV2 from '../../components/Tag/TagsContainerV2/TagsContainerV2';
+import TagsViewer from '../../components/Tag/TagsViewer/TagsViewer';
+import { getVersionPathWithTab } from '../../constants/constants';
 import { EntityField } from '../../constants/Feeds.constants';
+import { EntityTabs, EntityType } from '../../enums/entity.enum';
 import { ChangeDescription } from '../../generated/entity/data/dashboard';
+import { MlFeature } from '../../generated/entity/data/mlmodel';
+import { TagSource } from '../../generated/type/tagLabel';
 import {
   getCommonExtraInfoForVersionDetails,
   getEntityVersionByField,
   getEntityVersionTags,
 } from '../../utils/EntityVersionUtils';
+import { getMlFeatureVersionData } from '../../utils/MlModelVersionUtils';
+import { getFilterTags } from '../../utils/TableTags/TableTags.utils';
 import Loader from '../Loader/Loader';
 import { MlModelVersionProp } from './MlModelVersion.interface';
 
@@ -57,6 +56,7 @@ const MlModelVersion: FC<MlModelVersionProp> = ({
   currentVersionData,
   isVersionLoading,
   owner,
+  domain,
   tier,
   slashedMlModelName,
   versionList,
@@ -73,10 +73,17 @@ const MlModelVersion: FC<MlModelVersionProp> = ({
     currentVersionData.changeDescription as ChangeDescription
   );
 
-  const { ownerDisplayName, ownerRef, tierDisplayName } = useMemo(
-    () => getCommonExtraInfoForVersionDetails(changeDescription, owner, tier),
-    [changeDescription, owner, tier]
-  );
+  const { ownerDisplayName, ownerRef, tierDisplayName, domainDisplayName } =
+    useMemo(
+      () =>
+        getCommonExtraInfoForVersionDetails(
+          changeDescription,
+          owner,
+          tier,
+          domain
+        ),
+      [changeDescription, owner, tier, domain]
+    );
 
   const mlFeaturesData = useMemo(
     () => getMlFeatureVersionData(currentVersionData, changeDescription),
@@ -145,8 +152,7 @@ const MlModelVersion: FC<MlModelVersionProp> = ({
                   />
                 </Col>
                 <Col span={24}>
-                  {(currentVersionData as Mlmodel).mlFeatures &&
-                  (currentVersionData as Mlmodel).mlFeatures?.length ? (
+                  {currentVersionData.mlFeatures?.length ? (
                     <Row data-testid="feature-list">
                       <Col span={24}>
                         <Divider className="m-y-md" />
@@ -304,9 +310,7 @@ const MlModelVersion: FC<MlModelVersionProp> = ({
         children: (
           <CustomPropertyTable
             isVersionView
-            entityDetails={
-              currentVersionData as CustomPropertyProps['entityDetails']
-            }
+            entityDetails={currentVersionData}
             entityType={EntityType.MLMODEL}
             hasEditAccess={false}
             hasPermission={entityPermissions.ViewAll}
@@ -330,6 +334,7 @@ const MlModelVersion: FC<MlModelVersionProp> = ({
                 currentVersionData={currentVersionData}
                 deleted={deleted}
                 displayName={displayName}
+                domainDisplayName={domainDisplayName}
                 entityType={EntityType.MLMODEL}
                 ownerDisplayName={ownerDisplayName}
                 ownerRef={ownerRef}

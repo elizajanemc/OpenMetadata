@@ -20,6 +20,7 @@ import javax.ws.rs.client.WebTarget;
 import org.apache.http.client.HttpResponseException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.openmetadata.common.utils.CommonUtil;
 import org.openmetadata.schema.api.services.CreateSearchService;
 import org.openmetadata.schema.entity.services.SearchService;
 import org.openmetadata.schema.entity.services.connections.TestConnectionResult;
@@ -28,12 +29,11 @@ import org.openmetadata.schema.services.connections.search.ElasticSearchConnecti
 import org.openmetadata.schema.type.ChangeDescription;
 import org.openmetadata.schema.type.SearchConnection;
 import org.openmetadata.service.Entity;
-import org.openmetadata.service.resources.EntityResourceTest;
 import org.openmetadata.service.resources.services.searchIndexes.SearchServiceResource;
 import org.openmetadata.service.util.JsonUtils;
 import org.openmetadata.service.util.TestUtils;
 
-public class SearchServiceResourceTest extends EntityResourceTest<SearchService, CreateSearchService> {
+public class SearchServiceResourceTest extends ServiceResourceTest<SearchService, CreateSearchService> {
   public SearchServiceResourceTest() {
     super(
         Entity.SEARCH_SERVICE,
@@ -75,12 +75,6 @@ public class SearchServiceResourceTest extends EntityResourceTest<SearchService,
         () -> createEntity(createRequest(test).withServiceType(null), ADMIN_AUTH_HEADERS),
         BAD_REQUEST,
         "[serviceType must not be null]");
-
-    // Create StorageService with mandatory connection field empty
-    assertResponse(
-        () -> createEntity(createRequest(test).withConnection(null), ADMIN_AUTH_HEADERS),
-        BAD_REQUEST,
-        "[connection must not be null]");
   }
 
   @Test
@@ -90,6 +84,9 @@ public class SearchServiceResourceTest extends EntityResourceTest<SearchService,
     createAndCheckEntity(createRequest(test, 1).withDescription(null), authHeaders);
     createAndCheckEntity(createRequest(test, 2).withDescription("description"), authHeaders);
     createAndCheckEntity(createRequest(test, 3).withConnection(TestUtils.ELASTIC_SEARCH_CONNECTION), authHeaders);
+
+    // We can create the service without connection
+    createAndCheckEntity(createRequest(test).withConnection(null), ADMIN_AUTH_HEADERS);
   }
 
   @Test
@@ -139,16 +136,12 @@ public class SearchServiceResourceTest extends EntityResourceTest<SearchService,
 
   @Override
   public CreateSearchService createRequest(String name) {
-    try {
-      return new CreateSearchService()
-          .withName(name)
-          .withServiceType(CreateSearchService.SearchServiceType.ElasticSearch)
-          .withConnection(
-              new SearchConnection()
-                  .withConfig(new ElasticSearchConnection().withHostPort(new URI("http://localhost:9200"))));
-    } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
-    }
+    return new CreateSearchService()
+        .withName(name)
+        .withServiceType(CreateSearchService.SearchServiceType.ElasticSearch)
+        .withConnection(
+            new SearchConnection()
+                .withConfig(new ElasticSearchConnection().withHostPort(CommonUtil.getUri("http://localhost:9200"))));
   }
 
   @Override

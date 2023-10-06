@@ -23,6 +23,7 @@ from typing import Any, Dict, Iterable, List, Optional, Union
 
 from pydantic import ValidationError
 
+from metadata.generated.schema.analytics.reportData import ReportData, ReportDataType
 from metadata.generated.schema.api.data.createChart import CreateChartRequest
 from metadata.generated.schema.api.data.createContainer import CreateContainerRequest
 from metadata.generated.schema.api.data.createDashboard import CreateDashboardRequest
@@ -77,9 +78,6 @@ from metadata.generated.schema.entity.policies.policy import Policy
 from metadata.generated.schema.entity.services.connections.database.customDatabaseConnection import (
     CustomDatabaseConnection,
 )
-from metadata.generated.schema.entity.services.connections.metadata.openMetadataConnection import (
-    OpenMetadataConnection,
-)
 from metadata.generated.schema.entity.services.dashboardService import DashboardService
 from metadata.generated.schema.entity.services.databaseService import DatabaseService
 from metadata.generated.schema.entity.services.messagingService import MessagingService
@@ -95,12 +93,16 @@ from metadata.generated.schema.metadataIngestion.workflow import (
 from metadata.generated.schema.tests.basic import TestCaseResult, TestResultValue
 from metadata.generated.schema.tests.testCase import TestCase, TestCaseParameterValue
 from metadata.generated.schema.tests.testSuite import TestSuite
+from metadata.generated.schema.type.basic import Timestamp
 from metadata.generated.schema.type.entityLineage import EntitiesEdge, LineageDetails
 from metadata.generated.schema.type.entityReference import EntityReference
+from metadata.generated.schema.type.lifeCycle import AccessDetails, LifeCycle
 from metadata.generated.schema.type.schema import Topic as TopicSchema
 from metadata.ingestion.api.common import Entity
 from metadata.ingestion.api.models import Either
 from metadata.ingestion.api.steps import InvalidSourceException, Source
+from metadata.ingestion.models.data_insight import OMetaDataInsightSample
+from metadata.ingestion.models.life_cycle import OMetaLifeCycleData
 from metadata.ingestion.models.pipeline_status import OMetaPipelineStatus
 from metadata.ingestion.models.profile_data import OMetaTableProfileSampleData
 from metadata.ingestion.models.tests_data import (
@@ -120,6 +122,7 @@ from metadata.utils.constants import UTF_8
 from metadata.utils.fqn import FQN_SEPARATOR
 from metadata.utils.helpers import get_standard_chart_type
 from metadata.utils.logger import ingestion_logger
+from metadata.utils.time_utils import convert_timestamp_to_milliseconds
 
 logger = ingestion_logger()
 
@@ -136,8 +139,7 @@ class InvalidSampleDataException(Exception):
     """
 
 
-def get_lineage_entity_ref(edge, metadata_config) -> Optional[EntityReference]:
-    metadata = OpenMetadata(metadata_config)
+def get_lineage_entity_ref(edge, metadata: OpenMetadata) -> Optional[EntityReference]:
     edge_fqn = edge["fqn"]
     if edge["type"] == "table":
         table = metadata.get_by_name(entity=Table, fqn=edge_fqn)
@@ -175,12 +177,11 @@ class SampleDataSource(
     python objects to be sent to the Sink.
     """
 
-    def __init__(self, config: WorkflowSource, metadata_config: OpenMetadataConnection):
+    def __init__(self, config: WorkflowSource, metadata: OpenMetadata):
         super().__init__()
         self.config = config
         self.service_connection = config.serviceConnection.__root__.config
-        self.metadata_config = metadata_config
-        self.metadata = OpenMetadata(metadata_config)
+        self.metadata = metadata
         self.list_policies = []
 
         sample_data_folder = self.service_connection.connectionOptions.__root__.get(
@@ -503,8 +504,24 @@ class SampleDataSource(
             )
         )
 
+        self.life_cycle_data = json.load(
+            open(  # pylint: disable=consider-using-with
+                sample_data_folder + "/lifecycle/lifeCycle.json",
+                "r",
+                encoding=UTF_8,
+            )
+        )
+
+        self.data_insight_data = json.load(
+            open(  # pylint: disable=consider-using-with
+                sample_data_folder + "/data_insights/data_insights.json",
+                "r",
+                encoding=UTF_8,
+            )
+        )
+
     @classmethod
-    def create(cls, config_dict, metadata_config: OpenMetadataConnection):
+    def create(cls, config_dict, metadata: OpenMetadata):
         """Create class instance"""
         config: WorkflowSource = WorkflowSource.parse_obj(config_dict)
         connection: CustomDatabaseConnection = config.serviceConnection.__root__.config
@@ -512,7 +529,7 @@ class SampleDataSource(
             raise InvalidSourceException(
                 f"Expected CustomDatabaseConnection, but got {connection}"
             )
-        return cls(config, metadata_config)
+        return cls(config, metadata)
 
     def prepare(self):
         """Nothing to prepare"""
@@ -539,6 +556,8 @@ class SampleDataSource(
         yield from self.ingest_test_case()
         yield from self.ingest_test_case_results()
         yield from self.ingest_logical_test_suite()
+        yield from self.ingest_data_insights()
+        yield from self.ingest_life_cycle()
 
     def ingest_teams(self) -> Iterable[Either[CreateTeamRequest]]:
         """
@@ -676,7 +695,6 @@ class SampleDataSource(
             yield Either(right=table_and_db)
 
             if table.get("sampleData"):
-
                 table_fqn = fqn.build(
                     self.metadata,
                     entity_type=Table,
@@ -789,7 +807,6 @@ class SampleDataSource(
             yield Either(right=create_topic)
 
             if topic.get("sampleData"):
-
                 topic_fqn = fqn.build(
                     self.metadata,
                     entity_type=Topic,
@@ -999,11 +1016,9 @@ class SampleDataSource(
 
     def ingest_lineage(self) -> Iterable[Either[AddLineageRequest]]:
         for edge in self.lineage:
-            from_entity_ref = get_lineage_entity_ref(edge["from"], self.metadata_config)
-            to_entity_ref = get_lineage_entity_ref(edge["to"], self.metadata_config)
-            edge_entity_ref = get_lineage_entity_ref(
-                edge["edge_meta"], self.metadata_config
-            )
+            from_entity_ref = get_lineage_entity_ref(edge["from"], self.metadata)
+            to_entity_ref = get_lineage_entity_ref(edge["to"], self.metadata)
+            edge_entity_ref = get_lineage_entity_ref(edge["edge_meta"], self.metadata)
             lineage_details = (
                 LineageDetails(pipeline=edge_entity_ref, sqlQuery=edge.get("sql_query"))
                 if edge_entity_ref
@@ -1362,6 +1377,102 @@ class SampleDataSource(
                         test_case_name=case.fullyQualifiedName.__root__,
                     )
                     yield Either(right=test_case_result_req)
+
+    def ingest_data_insights(self) -> Iterable[Either[OMetaDataInsightSample]]:
+        """Iterate over all the data insights and ingest them"""
+        data: Dict[str, List] = self.data_insight_data["reports"]
+
+        for report_type, report_data in data.items():
+            i = 0
+            for report_datum in report_data:
+                if report_type == ReportDataType.RawCostAnalysisReportData.value:
+                    start_ts = int(
+                        (datetime.utcnow() - timedelta(days=60)).timestamp() * 1000
+                    )
+                    end_ts = int(datetime.utcnow().timestamp() * 1000)
+                    tmstp = random.randint(start_ts, end_ts)
+                    report_datum["data"]["lifeCycle"]["accessed"]["timestamp"] = tmstp
+                record = OMetaDataInsightSample(
+                    record=ReportData(
+                        id=report_datum["id"],
+                        reportDataType=report_datum["reportDataType"],
+                        timestamp=Timestamp(
+                            __root__=int(
+                                (datetime.now() - timedelta(days=i)).timestamp() * 1000
+                            )
+                        ),
+                        data=report_datum["data"],
+                    )
+                )
+                i += 1
+                yield Either(left=None, right=record)
+
+    def ingest_life_cycle(self) -> Iterable[Either[OMetaLifeCycleData]]:
+        """Iterate over all the life cycle data and ingest them"""
+        for table_life_cycle in self.life_cycle_data["lifeCycleData"]:
+            table = self.metadata.get_by_name(
+                entity=Table, fqn=table_life_cycle["fqn"], fields=["lifeCycle"]
+            )
+            life_cycle = table_life_cycle["lifeCycle"]
+            life_cycle_data = LifeCycle()
+            life_cycle_data.created = AccessDetails(
+                timestamp=convert_timestamp_to_milliseconds(
+                    int(
+                        (
+                            datetime.now()
+                            - timedelta(days=life_cycle["created"]["days"])
+                        ).timestamp()
+                    )
+                ),
+                accessedByAProcess=life_cycle["created"].get("accessedByAProcess"),
+            )
+
+            life_cycle_data.updated = AccessDetails(
+                timestamp=convert_timestamp_to_milliseconds(
+                    int(
+                        (
+                            datetime.now()
+                            - timedelta(days=life_cycle["updated"]["days"])
+                        ).timestamp()
+                    )
+                ),
+                accessedByAProcess=life_cycle["updated"].get("accessedByAProcess"),
+            )
+
+            life_cycle_data.accessed = AccessDetails(
+                timestamp=convert_timestamp_to_milliseconds(
+                    int(
+                        (
+                            datetime.now()
+                            - timedelta(days=life_cycle["accessed"]["days"])
+                        ).timestamp()
+                    )
+                ),
+                accessedByAProcess=life_cycle["accessed"].get("accessedByAProcess"),
+            )
+
+            if life_cycle["created"].get("accessedBy"):
+                life_cycle_data.created.accessedBy = self.get_accessed_by(
+                    life_cycle["created"]["accessedBy"]["name"]
+                )
+
+            if life_cycle["updated"].get("accessedBy"):
+                life_cycle_data.updated.accessedBy = self.get_accessed_by(
+                    life_cycle["updated"]["accessedBy"]["name"]
+                )
+
+            if life_cycle["accessed"].get("accessedBy"):
+                life_cycle_data.accessed.accessedBy = self.get_accessed_by(
+                    life_cycle["accessed"]["accessedBy"]["name"]
+                )
+
+            life_cycle_request = OMetaLifeCycleData(
+                entity=table, life_cycle=life_cycle_data
+            )
+            yield Either(right=life_cycle_request)
+
+    def get_accessed_by(self, accessed_by) -> EntityReference:
+        return self.metadata.get_entity_reference(entity=User, fqn=accessed_by)
 
     def close(self):
         """Nothing to close"""

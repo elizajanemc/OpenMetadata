@@ -11,44 +11,43 @@
  *  limitations under the License.
  */
 import { Button, Col, Row } from 'antd';
-import { ColumnsType } from 'antd/lib/table';
+import Table, { ColumnsType } from 'antd/lib/table';
 import { AxiosError } from 'axios';
-import ErrorPlaceHolder from 'components/common/error-with-placeholder/ErrorPlaceHolder';
-import FilterTablePlaceHolder from 'components/common/error-with-placeholder/FilterTablePlaceHolder';
-import NextPrevious from 'components/common/next-previous/NextPrevious';
-import { OwnerLabel } from 'components/common/OwnerLabel/OwnerLabel.component';
-import Table from 'components/common/Table/Table';
-import { usePermissionProvider } from 'components/PermissionProvider/PermissionProvider';
-import { TableProfilerTab } from 'components/ProfilerDashboard/profilerDashboard.interface';
-import ProfilerProgressWidget from 'components/TableProfiler/Component/ProfilerProgressWidget';
-import {
-  getTableTabPath,
-  INITIAL_PAGING_VALUE,
-  PAGE_SIZE,
-  ROUTES,
-} from 'constants/constants';
-import { PROGRESS_BAR_COLOR } from 'constants/TestSuite.constant';
-import { ERROR_PLACEHOLDER_TYPE } from 'enums/common.enum';
-import { EntityTabs } from 'enums/entity.enum';
-import { TestSummary } from 'generated/entity/data/table';
-import { TestSuite } from 'generated/tests/testSuite';
-import { EntityReference } from 'generated/type/entityReference';
-import { Paging } from 'generated/type/paging';
 import { isString } from 'lodash';
 import { PagingResponse } from 'Models';
-import { DataQualityPageTabs } from 'pages/DataQuality/DataQualityPage.interface';
 import QueryString from 'qs';
 import React, { ReactNode, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import {
+  getTableTabPath,
+  INITIAL_PAGING_VALUE,
+  PAGE_SIZE,
+  ROUTES,
+} from '../../../constants/constants';
+import { PROGRESS_BAR_COLOR } from '../../../constants/TestSuite.constant';
+import { ERROR_PLACEHOLDER_TYPE } from '../../../enums/common.enum';
+import { EntityTabs } from '../../../enums/entity.enum';
+import { TestSummary } from '../../../generated/entity/data/table';
+import { EntityReference } from '../../../generated/entity/type';
+import { TestSuite } from '../../../generated/tests/testCase';
+import { DataQualityPageTabs } from '../../../pages/DataQuality/DataQualityPage.interface';
+import {
   getListTestSuites,
   ListTestSuitePrams,
   TestSuiteType,
-} from 'rest/testAPI';
-import { getEntityName } from 'utils/EntityUtils';
-import { getTestSuitePath } from 'utils/RouterUtils';
-import { showErrorToast } from 'utils/ToastUtils';
+} from '../../../rest/testAPI';
+import { getEntityName } from '../../../utils/EntityUtils';
+import { getTestSuitePath } from '../../../utils/RouterUtils';
+import { showErrorToast } from '../../../utils/ToastUtils';
+import ErrorPlaceHolder from '../../common/error-with-placeholder/ErrorPlaceHolder';
+import FilterTablePlaceHolder from '../../common/error-with-placeholder/FilterTablePlaceHolder';
+import NextPrevious from '../../common/next-previous/NextPrevious';
+import { PagingHandlerParams } from '../../common/next-previous/NextPrevious.interface';
+import { OwnerLabel } from '../../common/OwnerLabel/OwnerLabel.component';
+import { usePermissionProvider } from '../../PermissionProvider/PermissionProvider';
+import { TableProfilerTab } from '../../ProfilerDashboard/profilerDashboard.interface';
+import ProfilerProgressWidget from '../../TableProfiler/Component/ProfilerProgressWidget';
 
 export const TestSuites = ({ summaryPanel }: { summaryPanel: ReactNode }) => {
   const { t } = useTranslation();
@@ -151,15 +150,15 @@ export const TestSuites = ({ summaryPanel }: { summaryPanel: ReactNode }) => {
     }
   };
 
-  const handlePagingClick = (
-    cursorValue: string | number,
-    activePage?: number
-  ) => {
+  const handlePageChange = ({
+    cursorType,
+    currentPage,
+  }: PagingHandlerParams) => {
     const { paging } = testSuites;
-    if (isString(cursorValue)) {
-      fetchTestSuites({ [cursorValue]: paging?.[cursorValue as keyof Paging] });
+    if (isString(cursorType)) {
+      fetchTestSuites({ [cursorType]: paging?.[cursorType] });
     }
-    activePage && setCurrentPage(activePage);
+    setCurrentPage(currentPage);
   };
 
   useEffect(() => {
@@ -217,7 +216,7 @@ export const TestSuites = ({ summaryPanel }: { summaryPanel: ReactNode }) => {
             currentPage={currentPage}
             pageSize={PAGE_SIZE}
             paging={testSuites.paging}
-            pagingHandler={handlePagingClick}
+            pagingHandler={handlePageChange}
           />
         )}
       </Col>

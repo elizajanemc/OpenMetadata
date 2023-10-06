@@ -16,7 +16,6 @@ Domo Database source to extract metadata
 import traceback
 from typing import Any, Iterable, List, Optional, Tuple
 
-from metadata.clients.domo_client import DomoClient
 from metadata.generated.schema.api.data.createDatabase import CreateDatabaseRequest
 from metadata.generated.schema.api.data.createDatabaseSchema import (
     CreateDatabaseSchemaRequest,
@@ -30,9 +29,6 @@ from metadata.generated.schema.api.lineage.addLineage import AddLineageRequest
 from metadata.generated.schema.entity.data.table import Column, Table, TableType
 from metadata.generated.schema.entity.services.connections.database.domoDatabaseConnection import (
     DomoDatabaseConnection,
-)
-from metadata.generated.schema.entity.services.connections.metadata.openMetadataConnection import (
-    OpenMetadataConnection,
 )
 from metadata.generated.schema.metadataIngestion.databaseServiceMetadataPipeline import (
     DatabaseServiceMetadataPipeline,
@@ -71,28 +67,27 @@ class DomodatabaseSource(DatabaseServiceSource):
     Database metadata from Domo Database Source
     """
 
-    def __init__(self, config: WorkflowSource, metadata_config: OpenMetadataConnection):
+    def __init__(self, config: WorkflowSource, metadata: OpenMetadata):
         super().__init__()
         self.config = config
         self.source_config: DatabaseServiceMetadataPipeline = (
             self.config.sourceConfig.config
         )
-        self.metadata = OpenMetadata(metadata_config)
+        self.metadata = metadata
         self.service_connection = self.config.serviceConnection.__root__.config
         self.domo_client = get_connection(self.service_connection)
         self.connection_obj = self.domo_client
-        self.client = DomoClient(self.service_connection)
         self.test_connection()
 
     @classmethod
-    def create(cls, config_dict: dict, metadata_config: OpenMetadataConnection):
+    def create(cls, config_dict: dict, metadata: OpenMetadata):
         config = WorkflowSource.parse_obj(config_dict)
         connection: DomoDatabaseConnection = config.serviceConnection.__root__.config
         if not isinstance(connection, DomoDatabaseConnection):
             raise InvalidSourceException(
                 f"Expected DomoDatabaseConnection, but got {connection}"
             )
-        return cls(config, metadata_config)
+        return cls(config, metadata)
 
     def get_database_names(self) -> Iterable[str]:
         database_name = self.service_connection.databaseName or DEFAULT_DATABASE
@@ -258,7 +253,7 @@ class DomodatabaseSource(DatabaseServiceSource):
         Method to get the source url for domodatabase
         """
         try:
-            return f"{clean_uri(self.service_connection.sandboxDomain)}/datasources/{table_name}/details/overview"
+            return f"{clean_uri(self.service_connection.instanceDomain)}/datasources/{table_name}/details/overview"
         except Exception as exc:
             logger.debug(traceback.format_exc())
             logger.warning(f"Unable to get source url for {table_name}: {exc}")
@@ -270,4 +265,4 @@ class DomodatabaseSource(DatabaseServiceSource):
         return table
 
     def close(self) -> None:
-        self.client.client.close()
+        """Nothing to close"""

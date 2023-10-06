@@ -118,7 +118,7 @@ SELECT query_text from snowflake.account_usage.query_history limit 1
 """
 
 SNOWFLAKE_TEST_GET_TABLES = """
-SELECT TABLE_NAME FROM information_schema.tables LIMIT 1 
+SELECT TABLE_NAME FROM "{database_name}".information_schema.tables LIMIT 1 
 """
 
 SNOWFLAKE_GET_DATABASES = "SHOW DATABASES"
@@ -149,11 +149,12 @@ SNOWFLAKE_GET_CURRENT_ACCOUNT = "SELECT CURRENT_ACCOUNT() AS account"
 
 SNOWFLAKE_LIFE_CYCLE_QUERY = textwrap.dedent(
     """
-select created, deleted from snowflake.account_usage.tables
-where table_name = '{table_name}'
-and table_schema = '{schema_name}'
+select 
+table_name as table_name,
+created as created_at
+from snowflake.account_usage.tables
+where table_schema = '{schema_name}'
 and table_catalog = '{database_name}'
-limit 1
 """
 )
 
@@ -200,6 +201,8 @@ Q_HISTORY AS (
       USER_NAME
     FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY SP
     WHERE QUERY_TYPE <> 'CALL'
+      AND QUERY_TEXT NOT LIKE '/* {{"app": "OpenMetadata", %%}} */%%'
+      AND QUERY_TEXT NOT LIKE '/* {{"app": "dbt", %%}} */%%'
       AND START_TIME >= '{start_date}' 
       AND WAREHOUSE_NAME = '{warehouse}'
       AND SCHEMA_NAME = '{schema_name}'

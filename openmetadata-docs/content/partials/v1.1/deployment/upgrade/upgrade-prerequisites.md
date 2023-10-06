@@ -27,7 +27,7 @@ You can learn more about how the migration process works [here](/deployment/upgr
 ```python
 python -m venv venv
 source venv/bin/activate
-pip install openmetadata-ingestion~=1.1.4
+pip install openmetadata-ingestion~=1.1.5
 ```
 
 Validate the installed metadata version with `python -m metadata --version`
@@ -78,21 +78,28 @@ Carefully reviewing this will prevent easy errors.
 
 ### (Optional) 3. Update your OpenMetadata Ingestion Client
 
-If you are running the ingestion workflows **externally**, you need to make sure that the Python Client you use is aligned
+If you are running the ingestion workflows **externally** or using a custom Airflow installation, you need to make sure that the Python Client you use is aligned
 with the OpenMetadata server version.
 
 For example, if you are upgrading the server to the version `x.y.z`, you will need to update your client with
 
-```
+```bash
 pip install openmetadata-ingestion[<plugin>]==x.y.z
 ```
 
-The `plugin` parameter is a list of the sources that we want to ingest. An example would look like this `openmetadata-ingestion[mysql,snowflake,s3]==1.1.4`.
+The `plugin` parameter is a list of the sources that we want to ingest. An example would look like this `openmetadata-ingestion[mysql,snowflake,s3]==1.1.5`.
 You will find specific instructions for each connector [here](/connectors).
 
-## 1.1.4 - Stable Release 🎉
+Moreover, if working with your own Airflow deployment - not the `openmetadata-ingestion` image - you will need to upgrade
+as well the `openmetadata-managed-apis` version:
 
-OpenMetadata 1.1.4 is a stable release. Please check the [release notes](/releases/latest-release).
+```bash
+pip install openmetadata-managed-apis==x.y.z
+```
+
+## 1.1.5 - Stable Release 🎉
+
+OpenMetadata 1.1.5 is a stable release. Please check the [release notes](/releases/latest-release).
 
 If you are upgrading production this is the recommended version to upgrade to.
 
@@ -166,6 +173,39 @@ yq -i -e '{"openmetadata": {"config": .global}}' openmetadata.values.yml
 The above command will update `global.*` with `openmetadata.config.*` yaml config. Please note, the above command is only recommended for users with custom helm values file explicit for OpenMetadata Helm Charts.
 
 For more information, visit the official helm docs for [global chart values](https://helm.sh/docs/chart_template_guide/subcharts_and_globals/#global-chart-values).
+
+### Update `sort_buffer_size` (MySQL) or `work_mem` (Postgres)
+
+Before running the migrations, it is important to update these parameters to ensure there are no runtime errors.
+A safe value would be setting them to 10MB.
+
+**If using MySQL**
+
+You can update it via SQL (note that it will reset after the server restarts):
+
+```sql
+SET GLOBAL sort_buffer_size = 10485760
+```
+
+To make the configuration persistent, you'd need to navigate to your MySQL Server install directory and update the
+`my.ini` or `my.cnf` [files](https://dev.mysql.com/doc/refman/8.0/en/option-files.html) with `sort_buffer_size = 10485760`.
+
+If using RDS, you will need to update your instance's [Parameter Group](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.html)
+to include the above change.
+
+**If using Postgres**
+
+You can update it via SQL (not that it will reset after the server restarts):
+
+```sql
+SET work_mem = '10MB';
+```
+
+To make the configuration persistent, you'll need to update the `postgresql.conf` [file](https://www.postgresql.org/docs/9.3/config-setting.html)
+with `work_mem = 10MB`.
+
+If using RDS, you will need to update your instance's [Parameter Group](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithParamGroups.html)
+to include the above change.
 
 ### Elasticsearch and OpenSearch
 

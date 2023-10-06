@@ -10,7 +10,7 @@ Please follow the instructions below
 {% stepVisualInfo %}
 
 {% image
-src="/images/v1.2.0/connectors/configure-metadata-ingestion-storage.png"
+src="/images/v1.2/connectors/configure-metadata-ingestion-storage.png"
 alt="Configure Metadata Ingestion"
 caption="Configure Metadata Ingestion Page" /%}
 
@@ -27,5 +27,6 @@ caption="Configure Metadata Ingestion Page" /%}
     - **Include**: Explicitly include containers by adding a list of comma-separated regular expressions to the Include field. OpenMetadata will include all containers with names matching one or more of the supplied regular expressions. All other containers will be excluded.
     - **Exclude**: Explicitly exclude containers by adding a list of comma-separated regular expressions to the Exclude field. OpenMetadata will exclude all containers with names matching one or more of the supplied regular expressions. All other containers will be included.
 - **Enable Debug Log (toggle)**: Set the Enable Debug Log toggle to set the default log level to debug.
+- **Storage Metadata Config Source**: Here you can specify the location of your global manifest `openmetadata_storage_manifest.json` file. It can be located in S3, a local path or HTTP.
 
 {% /extraContent %}

@@ -30,9 +30,6 @@ from metadata.generated.schema.api.data.createTable import CreateTableRequest
 from metadata.generated.schema.api.lineage.addLineage import AddLineageRequest
 from metadata.generated.schema.entity.data.databaseSchema import DatabaseSchema
 from metadata.generated.schema.entity.data.table import Table, TableType
-from metadata.generated.schema.entity.services.connections.metadata.openMetadataConnection import (
-    OpenMetadataConnection,
-)
 from metadata.generated.schema.metadataIngestion.databaseServiceMetadataPipeline import (
     DatabaseServiceMetadataPipeline,
 )
@@ -47,9 +44,9 @@ from metadata.ingestion.source.database.database_service import (
     DatabaseServiceSource,
     QueryByProcedure,
 )
-from metadata.ingestion.source.database.datalake.metadata import DatalakeSource
 from metadata.utils import fqn
 from metadata.utils.constants import COMPLEX_COLUMN_SEPARATOR, DEFAULT_DATABASE
+from metadata.utils.datalake.datalake_utils import get_columns
 from metadata.utils.filters import filter_by_schema, filter_by_table
 from metadata.utils.logger import ingestion_logger
 
@@ -65,14 +62,13 @@ class CommonNoSQLSource(DatabaseServiceSource, ABC):
     Database metadata from NoSQL source
     """
 
-    def __init__(self, config: WorkflowSource, metadata_config: OpenMetadataConnection):
+    def __init__(self, config: WorkflowSource, metadata: OpenMetadata):
         super().__init__()
         self.config = config
         self.source_config: DatabaseServiceMetadataPipeline = (
             self.config.sourceConfig.config
         )
-        self.metadata_config = metadata_config
-        self.metadata = OpenMetadata(metadata_config)
+        self.metadata = metadata
         self.service_connection = self.config.serviceConnection.__root__.config
         self.connection_obj = get_connection(self.service_connection)
         self.test_connection()
@@ -214,7 +210,7 @@ class CommonNoSQLSource(DatabaseServiceSource, ABC):
         try:
             data = self.get_table_columns_dict(schema_name, table_name)
             df = json_normalize(list(data), sep=COMPLEX_COLUMN_SEPARATOR)
-            columns = DatalakeSource.get_columns(df)
+            columns = get_columns(df)
             table_request = CreateTableRequest(
                 name=table_name,
                 tableType=table_type,

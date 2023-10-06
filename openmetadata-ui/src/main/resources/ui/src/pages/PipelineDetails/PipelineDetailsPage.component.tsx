@@ -12,28 +12,30 @@
  */
 
 import { AxiosError } from 'axios';
-import ErrorPlaceHolder from 'components/common/error-with-placeholder/ErrorPlaceHolder';
-import Loader from 'components/Loader/Loader';
-import { usePermissionProvider } from 'components/PermissionProvider/PermissionProvider';
-import { ResourceEntity } from 'components/PermissionProvider/PermissionProvider.interface';
-import PipelineDetails from 'components/PipelineDetails/PipelineDetails.component';
-import { ERROR_PLACEHOLDER_TYPE } from 'enums/common.enum';
 import { compare, Operation } from 'fast-json-patch';
 import { isUndefined, omitBy } from 'lodash';
 import { observer } from 'mobx-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory, useParams } from 'react-router-dom';
+import ErrorPlaceHolder from '../../components/common/error-with-placeholder/ErrorPlaceHolder';
+import Loader from '../../components/Loader/Loader';
+import { usePermissionProvider } from '../../components/PermissionProvider/PermissionProvider';
+import { ResourceEntity } from '../../components/PermissionProvider/PermissionProvider.interface';
+import PipelineDetails from '../../components/PipelineDetails/PipelineDetails.component';
+import { QueryVote } from '../../components/TableQueries/TableQueries.interface';
+import { getVersionPath } from '../../constants/constants';
+import { ERROR_PLACEHOLDER_TYPE } from '../../enums/common.enum';
+import { EntityType } from '../../enums/entity.enum';
+import { Pipeline } from '../../generated/entity/data/pipeline';
+import { Paging } from '../../generated/type/paging';
 import {
   addFollower,
   getPipelineByFqn,
   patchPipelineDetails,
   removeFollower,
-} from 'rest/pipelineAPI';
-import { getVersionPath } from '../../constants/constants';
-import { EntityType } from '../../enums/entity.enum';
-import { Pipeline } from '../../generated/entity/data/pipeline';
-import { Paging } from '../../generated/type/paging';
+  updatePipelinesVotes,
+} from '../../rest/pipelineAPI';
 import {
   addToRecentViewed,
   getCurrentUserId,
@@ -52,7 +54,7 @@ const PipelineDetailsPage = () => {
   const USERId = getCurrentUserId();
   const history = useHistory();
 
-  const { pipelineFQN } = useParams<{ pipelineFQN: string }>();
+  const { fqn: pipelineFQN } = useParams<{ fqn: string }>();
   const [pipelineDetails, setPipelineDetails] = useState<Pipeline>(
     {} as Pipeline
   );
@@ -254,6 +256,25 @@ const PipelineDetailsPage = () => {
     });
   };
 
+  const updateVote = async (data: QueryVote, id: string) => {
+    try {
+      await updatePipelinesVotes(id, data);
+      const details = await getPipelineByFqn(pipelineFQN, defaultFields);
+      setPipelineDetails(details);
+    } catch (error) {
+      showErrorToast(error as AxiosError);
+    }
+  };
+
+  const updatePipelineDetailsState = useCallback((data) => {
+    const updatedData = data as Pipeline;
+
+    setPipelineDetails((data) => ({
+      ...(data ?? updatedData),
+      version: updatedData.version,
+    }));
+  }, []);
+
   useEffect(() => {
     if (pipelinePermissions.ViewAll || pipelinePermissions.ViewBasic) {
       fetchPipelineDetail(pipelineFQN);
@@ -292,8 +313,10 @@ const PipelineDetailsPage = () => {
       settingsUpdateHandler={settingsUpdateHandler}
       taskUpdateHandler={onTaskUpdate}
       unFollowPipelineHandler={unFollowPipeline}
+      updatePipelineDetailsState={updatePipelineDetailsState}
       versionHandler={versionHandler}
       onExtensionUpdate={handleExtensionUpdate}
+      onUpdateVote={updateVote}
     />
   );
 };
