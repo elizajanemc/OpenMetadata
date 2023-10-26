@@ -142,13 +142,14 @@ MOCK_CREATE_TABLE = CreateTableRequest(
         Column(
             name="address",
             displayName="address",
-            dataType=DataType.RECORD,
-            dataTypeDisplay=DataType.RECORD.value,
+            dataType=DataType.JSON,
+            dataTypeDisplay=DataType.JSON.value,
             children=[
                 Column(
                     name="line",
                     dataType=DataType.STRING,
                     dataTypeDisplay=DataType.STRING.value,
+                    displayName="line",
                 )
             ],
         ),

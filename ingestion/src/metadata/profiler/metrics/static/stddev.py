@@ -70,6 +70,15 @@ def _(element, compiler, **kw):
     return "if(isNaN(stddevPop(%s)), null, stddevPop(%s))" % ((proc,) * 2)
 
 
+@compiles(StdDevFn, Dialects.Druid)
+def _(element, compiler, **kw):  # pylint: disable=unused-argument
+    """returns  stdv for druid. Could not validate with our cluster
+    we might need to look into installing the druid-stats module
+    https://druid.apache.org/docs/latest/configuration/extensions/#loading-extensions
+    """
+    return "NULL"
+
+
 class StdDev(StaticMetric):
     """
     STD Metric
@@ -106,10 +115,13 @@ class StdDev(StaticMetric):
 
         if is_quantifiable(self.col.type):
             try:
-                return pd.concat(df[self.col.name] for df in dfs).std()
+                df = pd.to_numeric(pd.concat(df[self.col.name] for df in dfs))
+                if not df.empty:
+                    return df.std()
+                return None
             except MemoryError:
                 logger.error(
-                    f"Unable to compute distinctCount for {self.col.name} due to memory constraints."
+                    f"Unable to compute Standard Deviation for {self.col.name} due to memory constraints."
                     f"We recommend using a smaller sample size or partitionning."
                 )
                 return None
