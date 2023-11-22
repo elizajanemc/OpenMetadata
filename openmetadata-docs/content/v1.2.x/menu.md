@@ -38,8 +38,6 @@ site_menu:
 
   - category: Deployment / Docker Deployment
     url: /deployment/docker
-  - category: Deployment / Docker Deployment / Volumes
-    url: /deployment/docker/volumes
   - category: Deployment / Docker Deployment / Enable Security
     url: /deployment/docker/security
 
@@ -57,8 +55,8 @@ site_menu:
     url: /deployment/kubernetes/security
   - category: Deployment / Kubernetes Deployment / Helm Values
     url: /deployment/kubernetes/helm-values
-  - category: Deployment / Kubernetes Deployment / GKE Troubleshooting
-    url: /deployment/kubernetes/gke-troubleshooting
+  - category: Deployment / Kubernetes Deployment / FAQs
+    url: /deployment/kubernetes/faqs
 
   - category: Deployment / Ingestion
     url: /deployment/ingestion
@@ -181,6 +179,8 @@ site_menu:
   - category: Deployment / Enable Secrets Manager / How to add a new implementation
     url: /deployment/secrets-manager/how-to-add-a-new-implementation
 
+  - category: Deployment / How to enable AWS RDS IAM Auth
+    url: /deployment/rds-iam-auth
   - category: Deployment / Server Configuration Reference
     url: /deployment/configuration
 
@@ -466,6 +466,8 @@ site_menu:
     url: /connectors/pipeline/nifi
   - category: Connectors / Pipeline / Nifi / Run Externally
     url: /connectors/pipeline/nifi/yaml
+  - category: Connectors / Pipeline / Nifi / Troubleshooting
+    url: /connectors/pipeline/nifi/troubleshooting
   - category: Connectors / Pipeline / Spline
     url: /connectors/pipeline/spline
   - category: Connectors / Pipeline / Spline / Run Externally
@@ -556,6 +558,10 @@ site_menu:
     url: /connectors/ingestion/workflows/profiler
   - category: Connectors / Ingestion / Workflows / Profiler / Metrics
     url: /connectors/ingestion/workflows/profiler/metrics
+  - category: Connectors / Ingestion / Workflows / Profiler / Sample Data
+    url: /connectors/ingestion/workflows/profiler/external-sample-data
+  - category: Connectors / Ingestion / Workflows / Profiler / External Workflow
+    url: /connectors/ingestion/workflows/profiler/external-workflow
   - category: Connectors / Ingestion / Workflows / Data Quality
     url: /connectors/ingestion/workflows/data-quality
   - category: Connectors / Ingestion / Workflows / Data Quality / Tests
@@ -610,38 +616,36 @@ site_menu:
     url: /how-to-guides/admin-guide-roles-policies/authorization
   - category: How to Guides / Admin Guide for Roles and Policies / Use Cases - Creating Roles & Policies in OpenMetadata
     url: /how-to-guides/admin-guide-roles-policies/use-cases
-  - category: How to Guides / User Guide for Data Stewards
-    url: /how-to-guides/user-guide-for-data-stewards
-  - category: How to Guides / User Guide for Data Stewards / Understanding the Basics of OpenMetadata
-    url: /how-to-guides/user-guide-for-data-stewards/basics-openmetadata
-  - category: How to Guides / User Guide for Data Stewards / Overview of Data Assets
-    url: /how-to-guides/user-guide-for-data-stewards/overview-data-assets
-  - category: How to Guides / User Guide for Data Stewards / Overview of Data Assets / Data Asset Tabs
-    url: /how-to-guides/user-guide-for-data-stewards/overview-data-assets/tabs
-  - category: How to Guides / User Guide for Data Stewards / Overview of Data Assets / How to Add Description using Markdown
-    url: /how-to-guides/user-guide-for-data-stewards/overview-data-assets/description
-  - category: How to Guides / User Guide for Data Stewards / Overview of Data Assets / Request for Description
-    url: /how-to-guides/user-guide-for-data-stewards/overview-data-assets/request-description
-  - category: How to Guides / User Guide for Data Stewards / Overview of Data Assets / How to Assign or Change Data Ownership
-    url: /how-to-guides/user-guide-for-data-stewards/overview-data-assets/data-ownership
-  - category: How to Guides / User Guide for Data Stewards / Overview of Data Assets / How to Follow a Data Asset
-    url: /how-to-guides/user-guide-for-data-stewards/overview-data-assets/follow-data-asset
-  - category: How to Guides / User Guide for Data Stewards / Overview of Data Assets / How to Add Tags
-    url: /how-to-guides/user-guide-for-data-stewards/overview-data-assets/tags
-  - category: How to Guides / User Guide for Data Stewards / Overview of Data Assets / How to Request for Tags
-    url: /how-to-guides/user-guide-for-data-stewards/overview-data-assets/request-tags
-  - category: How to Guides / User Guide for Data Stewards / Overview of Data Assets / How to Add Glossary Terms
-    url: /how-to-guides/user-guide-for-data-stewards/overview-data-assets/glossary
-  - category: How to Guides / User Guide for Data Stewards / Overview of Data Assets / How to Create a Custom Property for a Data Asset
-    url: /how-to-guides/user-guide-for-data-stewards/overview-data-assets/custom
-  - category: How to Guides / User Guide for Data Stewards / Overview of Data Assets / Overview of Announcements
-    url: /how-to-guides/user-guide-for-data-stewards/overview-data-assets/announcements
-  - category: How to Guides / User Guide for Data Stewards / Overview of Data Assets / How to Create an Announcement
-    url: /how-to-guides/user-guide-for-data-stewards/overview-data-assets/add-announcement
-  - category: How to Guides / User Guide for Data Stewards / Overview of Data Assets / Data Asset Versioning
-    url: /how-to-guides/user-guide-for-data-stewards/overview-data-assets/versions
-  - category: How to Guides / User Guide for Data Stewards / Overview of Data Assets / How to Delete a Data Asset
-    url: /how-to-guides/user-guide-for-data-stewards/overview-data-assets/delete
+  - category: How to Guides / Guide for Data Users
+    url: /how-to-guides/guide-for-data-users
+  - category: How to Guides / Guide for Data Users / Understanding the Basics of OpenMetadata
+    url: /how-to-guides/guide-for-data-users/basics-openmetadata
+  - category: How to Guides / Guide for Data Users / Overview of Data Assets
+    url: /how-to-guides/guide-for-data-users/data-asset-tabs
+  - category: How to Guides / Guide for Data Users / How to Add Description using Markdown
+    url: /how-to-guides/guide-for-data-users/description
+  - category: How to Guides / Guide for Data Users / How to Request for Description
+    url: /how-to-guides/guide-for-data-users/request-description
+  - category: How to Guides / Guide for Data Users / How to Assign or Change Data Ownership
+    url: /how-to-guides/guide-for-data-users/data-ownership
+  - category: How to Guides / Guide for Data Users / How to Follow a Data Asset
+    url: /how-to-guides/guide-for-data-users/follow-data-asset
+  - category: How to Guides / Guide for Data Users / How to Add Tags
+    url: /how-to-guides/guide-for-data-users/tags
+  - category: How to Guides / Guide for Data Users / How to Request for Tags
+    url: /how-to-guides/guide-for-data-users/request-tags
+  - category: How to Guides / Guide for Data Users / How to Add Glossary Terms
+    url: /how-to-guides/guide-for-data-users/glossary
+  - category: How to Guides / Guide for Data Users / How to Create a Custom Property for a Data Asset
+    url: /how-to-guides/guide-for-data-users/custom
+  - category: How to Guides / Guide for Data Users / Overview of Announcements
+    url: /how-to-guides/guide-for-data-users/announcements
+  - category: How to Guides / Guide for Data Users / How to Create an Announcement
+    url: /how-to-guides/guide-for-data-users/add-announcement
+  - category: How to Guides / Guide for Data Users / Data Asset Versioning
+    url: /how-to-guides/guide-for-data-users/versions
+  - category: How to Guides / Guide for Data Users / How to Delete a Data Asset
+    url: /how-to-guides/guide-for-data-users/delete
   - category: How to Guides / The Six Pillars of OpenMetadata
     url: /how-to-guides/openmetadata
   - category: How to Guides / The Six Pillars of OpenMetadata / Data Discovery
@@ -777,10 +781,14 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/analytics
   - category: Main Concepts / Metadata Standard / Schemas / Analytics / ReportData
     url: /main-concepts/metadata-standard/schemas/analytics/reportdata
+  - category: Main Concepts / Metadata Standard / Schemas / Analytics / Reportdatatype / AggregatedCostAnalysisReportData
+    url: /main-concepts/metadata-standard/schemas/analytics/reportdatatype/aggregatedcostanalysisreportdata
   - category: Main Concepts / Metadata Standard / Schemas / Analytics / Reportdatatype / EntityReportData
     url: /main-concepts/metadata-standard/schemas/analytics/reportdatatype/entityreportdata
   - category: Main Concepts / Metadata Standard / Schemas / Analytics / Reportdatatype
     url: /main-concepts/metadata-standard/schemas/analytics/reportdatatype
+  - category: Main Concepts / Metadata Standard / Schemas / Analytics / Reportdatatype / RawCostAnalysisReportData
+    url: /main-concepts/metadata-standard/schemas/analytics/reportdatatype/rawcostanalysisreportdata
   - category: Main Concepts / Metadata Standard / Schemas / Analytics / Reportdatatype / WebAnalyticEntityViewReportData
     url: /main-concepts/metadata-standard/schemas/analytics/reportdatatype/webanalyticentityviewreportdata
   - category: Main Concepts / Metadata Standard / Schemas / Analytics / Reportdatatype / WebAnalyticUserActivityReportData
@@ -839,6 +847,10 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/api/data/createpipeline
   - category: Main Concepts / Metadata Standard / Schemas / Api / Data / CreateQuery
     url: /main-concepts/metadata-standard/schemas/api/data/createquery
+  - category: Main Concepts / Metadata Standard / Schemas / Api / Data / CreateSearchIndex
+    url: /main-concepts/metadata-standard/schemas/api/data/createsearchindex
+  - category: Main Concepts / Metadata Standard / Schemas / Api / Data / CreateStoredProcedure
+    url: /main-concepts/metadata-standard/schemas/api/data/createstoredprocedure
   - category: Main Concepts / Metadata Standard / Schemas / Api / Data / CreateTable
     url: /main-concepts/metadata-standard/schemas/api/data/createtable
   - category: Main Concepts / Metadata Standard / Schemas / Api / Data / CreateTableProfile
@@ -847,6 +859,8 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/api/data/createtopic
   - category: Main Concepts / Metadata Standard / Schemas / Api / Data
     url: /main-concepts/metadata-standard/schemas/api/data
+  - category: Main Concepts / Metadata Standard / Schemas / Api / Data / LoadGlossary
+    url: /main-concepts/metadata-standard/schemas/api/data/loadglossary
   - category: Main Concepts / Metadata Standard / Schemas / Api / Data / RestoreEntity
     url: /main-concepts/metadata-standard/schemas/api/data/restoreentity
   - category: Main Concepts / Metadata Standard / Schemas / Api / Datainsight / CreateDataInsightChart
@@ -857,6 +871,10 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/api/datainsight/kpi/createkpirequest
   - category: Main Concepts / Metadata Standard / Schemas / Api / Datainsight / Kpi
     url: /main-concepts/metadata-standard/schemas/api/datainsight/kpi
+  - category: Main Concepts / Metadata Standard / Schemas / Api / Docstore / CreateDocument
+    url: /main-concepts/metadata-standard/schemas/api/docstore/createdocument
+  - category: Main Concepts / Metadata Standard / Schemas / Api / Docstore
+    url: /main-concepts/metadata-standard/schemas/api/docstore
   - category: Main Concepts / Metadata Standard / Schemas / Api / Domains / CreateDataProduct
     url: /main-concepts/metadata-standard/schemas/api/domains/createdataproduct
   - category: Main Concepts / Metadata Standard / Schemas / Api / Domains / CreateDomain
@@ -899,6 +917,8 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/api/services/createmlmodelservice
   - category: Main Concepts / Metadata Standard / Schemas / Api / Services / CreatePipelineService
     url: /main-concepts/metadata-standard/schemas/api/services/createpipelineservice
+  - category: Main Concepts / Metadata Standard / Schemas / Api / Services / CreateSearchService
+    url: /main-concepts/metadata-standard/schemas/api/services/createsearchservice
   - category: Main Concepts / Metadata Standard / Schemas / Api / Services / CreateStorageService
     url: /main-concepts/metadata-standard/schemas/api/services/createstorageservice
   - category: Main Concepts / Metadata Standard / Schemas / Api / Services
@@ -909,6 +929,8 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/api/services/ingestionpipelines
   - category: Main Concepts / Metadata Standard / Schemas / Api / SetOwner
     url: /main-concepts/metadata-standard/schemas/api/setowner
+  - category: Main Concepts / Metadata Standard / Schemas / Api / Teams / CreatePersona
+    url: /main-concepts/metadata-standard/schemas/api/teams/createpersona
   - category: Main Concepts / Metadata Standard / Schemas / Api / Teams / CreateRole
     url: /main-concepts/metadata-standard/schemas/api/teams/createrole
   - category: Main Concepts / Metadata Standard / Schemas / Api / Teams / CreateTeam
@@ -987,8 +1009,6 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/configuration/elasticsearchconfiguration
   - category: Main Concepts / Metadata Standard / Schemas / Configuration / EventHandlerConfiguration
     url: /main-concepts/metadata-standard/schemas/configuration/eventhandlerconfiguration
-  - category: Main Concepts / Metadata Standard / Schemas / Configuration / ExtensionConfiguration
-    url: /main-concepts/metadata-standard/schemas/configuration/extensionconfiguration
   - category: Main Concepts / Metadata Standard / Schemas / Configuration / FernetConfiguration
     url: /main-concepts/metadata-standard/schemas/configuration/fernetconfiguration
   - category: Main Concepts / Metadata Standard / Schemas / Configuration
@@ -1031,6 +1051,14 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/datainsight/kpi
   - category: Main Concepts / Metadata Standard / Schemas / Datainsight / Kpi / Kpi
     url: /main-concepts/metadata-standard/schemas/datainsight/kpi/kpi
+  - category: Main Concepts / Metadata Standard / Schemas / Datainsight / Type / AggregatedUnusedAssetsCount
+    url: /main-concepts/metadata-standard/schemas/datainsight/type/aggregatedunusedassetscount
+  - category: Main Concepts / Metadata Standard / Schemas / Datainsight / Type / AggregatedUnusedAssetsSize
+    url: /main-concepts/metadata-standard/schemas/datainsight/type/aggregatedunusedassetssize
+  - category: Main Concepts / Metadata Standard / Schemas / Datainsight / Type / AggregatedUsedVsUnusedAssetsCount
+    url: /main-concepts/metadata-standard/schemas/datainsight/type/aggregatedusedvsunusedassetscount
+  - category: Main Concepts / Metadata Standard / Schemas / Datainsight / Type / AggregatedUsedVsUnusedAssetsSize
+    url: /main-concepts/metadata-standard/schemas/datainsight/type/aggregatedusedvsunusedassetssize
   - category: Main Concepts / Metadata Standard / Schemas / Datainsight / Type / DailyActiveUsers
     url: /main-concepts/metadata-standard/schemas/datainsight/type/dailyactiveusers
   - category: Main Concepts / Metadata Standard / Schemas / Datainsight / Type
@@ -1045,16 +1073,52 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/datainsight/type/percentageofentitieswithdescriptionbytype
   - category: Main Concepts / Metadata Standard / Schemas / Datainsight / Type / PercentageOfEntitiesWithOwnerByType
     url: /main-concepts/metadata-standard/schemas/datainsight/type/percentageofentitieswithownerbytype
+  - category: Main Concepts / Metadata Standard / Schemas / Datainsight / Type / PercentageOfServicesWithDescription
+    url: /main-concepts/metadata-standard/schemas/datainsight/type/percentageofserviceswithdescription
+  - category: Main Concepts / Metadata Standard / Schemas / Datainsight / Type / PercentageOfServicesWithOwner
+    url: /main-concepts/metadata-standard/schemas/datainsight/type/percentageofserviceswithowner
   - category: Main Concepts / Metadata Standard / Schemas / Datainsight / Type / TotalEntitiesByTier
     url: /main-concepts/metadata-standard/schemas/datainsight/type/totalentitiesbytier
   - category: Main Concepts / Metadata Standard / Schemas / Datainsight / Type / TotalEntitiesByType
     url: /main-concepts/metadata-standard/schemas/datainsight/type/totalentitiesbytype
+  - category: Main Concepts / Metadata Standard / Schemas / Datainsight / Type / UnusedAssets
+    url: /main-concepts/metadata-standard/schemas/datainsight/type/unusedassets
   - category: Main Concepts / Metadata Standard / Schemas / Email / EmailRequest
     url: /main-concepts/metadata-standard/schemas/email/emailrequest
   - category: Main Concepts / Metadata Standard / Schemas / Email
     url: /main-concepts/metadata-standard/schemas/email
   - category: Main Concepts / Metadata Standard / Schemas / Email / SmtpSettings
     url: /main-concepts/metadata-standard/schemas/email/smtpsettings
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Applications / App
+    url: /main-concepts/metadata-standard/schemas/entity/applications/app
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Applications / AppConfig
+    url: /main-concepts/metadata-standard/schemas/entity/applications/appconfig
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Applications / AppRunRecord
+    url: /main-concepts/metadata-standard/schemas/entity/applications/apprunrecord
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Applications / Configuration / DataInsightsApp
+    url: /main-concepts/metadata-standard/schemas/entity/applications/configuration/datainsightsapp
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Applications / Configuration / ExternalAppIngestionConfig
+    url: /main-concepts/metadata-standard/schemas/entity/applications/configuration/externalappingestionconfig
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Applications / Configuration
+    url: /main-concepts/metadata-standard/schemas/entity/applications/configuration
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Applications / Configuration / SearchIndexingApp
+    url: /main-concepts/metadata-standard/schemas/entity/applications/configuration/searchindexingapp
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Applications / CreateAppRequest
+    url: /main-concepts/metadata-standard/schemas/entity/applications/createapprequest
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Applications
+    url: /main-concepts/metadata-standard/schemas/entity/applications
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Applications / JobStatus
+    url: /main-concepts/metadata-standard/schemas/entity/applications/jobstatus
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Applications / LiveExecutionContext
+    url: /main-concepts/metadata-standard/schemas/entity/applications/liveexecutioncontext
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Applications / Marketplace / AppMarketPlaceDefinition
+    url: /main-concepts/metadata-standard/schemas/entity/applications/marketplace/appmarketplacedefinition
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Applications / Marketplace / CreateAppMarketPlaceDefinitionReq
+    url: /main-concepts/metadata-standard/schemas/entity/applications/marketplace/createappmarketplacedefinitionreq
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Applications / Marketplace
+    url: /main-concepts/metadata-standard/schemas/entity/applications/marketplace
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Applications / ScheduledExecutionContext
+    url: /main-concepts/metadata-standard/schemas/entity/applications/scheduledexecutioncontext
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Automations
     url: /main-concepts/metadata-standard/schemas/entity/automations
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Automations / TestServiceConnection
@@ -1097,10 +1161,24 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/entity/data/query
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Data / Report
     url: /main-concepts/metadata-standard/schemas/entity/data/report
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Data / SearchIndex
+    url: /main-concepts/metadata-standard/schemas/entity/data/searchindex
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Data / StoredProcedure
+    url: /main-concepts/metadata-standard/schemas/entity/data/storedprocedure
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Data / Table
     url: /main-concepts/metadata-standard/schemas/entity/data/table
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Data / Topic
     url: /main-concepts/metadata-standard/schemas/entity/data/topic
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Docstore / Document
+    url: /main-concepts/metadata-standard/schemas/entity/docstore/document
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Docstore
+    url: /main-concepts/metadata-standard/schemas/entity/docstore
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Domains / DataProduct
+    url: /main-concepts/metadata-standard/schemas/entity/domains/dataproduct
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Domains / Domain
+    url: /main-concepts/metadata-standard/schemas/entity/domains/domain
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Domains
+    url: /main-concepts/metadata-standard/schemas/entity/domains
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Events
     url: /main-concepts/metadata-standard/schemas/entity/events
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Events / Webhook
@@ -1133,6 +1211,8 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/dashboard/domodashboardconnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Dashboard
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/dashboard
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Dashboard / LightdashConnection
+    url: /main-concepts/metadata-standard/schemas/entity/services/connections/dashboard/lightdashconnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Dashboard / LookerConnection
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/dashboard/lookerconnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Dashboard / MetabaseConnection
@@ -1141,6 +1221,8 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/dashboard/modeconnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Dashboard / PowerBIConnection
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/dashboard/powerbiconnection
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Dashboard / QlikSenseConnection
+    url: /main-concepts/metadata-standard/schemas/entity/services/connections/dashboard/qliksenseconnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Dashboard / QuickSightConnection
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/dashboard/quicksightconnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Dashboard / RedashConnection
@@ -1163,6 +1245,10 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/database/common/iamauthconfig
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Database / Common
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/database/common
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Database / Common / JwtAuth
+    url: /main-concepts/metadata-standard/schemas/entity/services/connections/database/common/jwtauth
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Database / CouchbaseConnection
+    url: /main-concepts/metadata-standard/schemas/entity/services/connections/database/couchbaseconnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Database / CustomDatabaseConnection
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/database/customdatabaseconnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Database / DatabricksConnection
@@ -1189,6 +1275,8 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/database/dynamodbconnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Database / GlueConnection
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/database/glueconnection
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Database / GreenplumConnection
+    url: /main-concepts/metadata-standard/schemas/entity/services/connections/database/greenplumconnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Database / HiveConnection
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/database/hiveconnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Database / ImpalaConnection
@@ -1203,8 +1291,6 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/database/mongodb/mongodbvalues
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Database / MongoDBConnection
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/database/mongodbconnection
-  - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Database / Couchbase
-    url: /main-concepts/metadata-standard/schemas/entity/services/connections/database/couchbaseconnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Database / MssqlConnection
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/database/mssqlconnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Database / MysqlConnection
@@ -1293,6 +1379,14 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/pipeline/nificonnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Pipeline / SplineConnection
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/pipeline/splineconnection
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Search / CustomSearchConnection
+    url: /main-concepts/metadata-standard/schemas/entity/services/connections/search/customsearchconnection
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Search / ElasticSearchConnection
+    url: /main-concepts/metadata-standard/schemas/entity/services/connections/search/elasticsearchconnection
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Search
+    url: /main-concepts/metadata-standard/schemas/entity/services/connections/search
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Search / OpenSearchConnection
+    url: /main-concepts/metadata-standard/schemas/entity/services/connections/search/opensearchconnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / ServiceConnection
     url: /main-concepts/metadata-standard/schemas/entity/services/connections/serviceconnection
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Connections / Storage / AdlsConection
@@ -1319,6 +1413,8 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/entity/services/ingestionpipelines
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Ingestionpipelines / IngestionPipeline
     url: /main-concepts/metadata-standard/schemas/entity/services/ingestionpipelines/ingestionpipeline
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / Ingestionpipelines / PipelineServiceClientResponse
+    url: /main-concepts/metadata-standard/schemas/entity/services/ingestionpipelines/pipelineserviceclientresponse
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / MessagingService
     url: /main-concepts/metadata-standard/schemas/entity/services/messagingservice
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / MetadataService
@@ -1327,12 +1423,16 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/entity/services/mlmodelservice
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / PipelineService
     url: /main-concepts/metadata-standard/schemas/entity/services/pipelineservice
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / SearchService
+    url: /main-concepts/metadata-standard/schemas/entity/services/searchservice
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / ServiceType
     url: /main-concepts/metadata-standard/schemas/entity/services/servicetype
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Services / StorageService
     url: /main-concepts/metadata-standard/schemas/entity/services/storageservice
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Teams
     url: /main-concepts/metadata-standard/schemas/entity/teams
+  - category: Main Concepts / Metadata Standard / Schemas / Entity / Teams / Persona
+    url: /main-concepts/metadata-standard/schemas/entity/teams/persona
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Teams / Role
     url: /main-concepts/metadata-standard/schemas/entity/teams/role
   - category: Main Concepts / Metadata Standard / Schemas / Entity / Teams / Team
@@ -1369,6 +1469,8 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/events
   - category: Main Concepts / Metadata Standard / Schemas / Events / SubscriptionResourceDescriptor
     url: /main-concepts/metadata-standard/schemas/events/subscriptionresourcedescriptor
+  - category: Main Concepts / Metadata Standard / Schemas / Metadataingestion / ApplicationPipeline
+    url: /main-concepts/metadata-standard/schemas/metadataingestion/applicationpipeline
   - category: Main Concepts / Metadata Standard / Schemas / Metadataingestion / DashboardServiceMetadataPipeline
     url: /main-concepts/metadata-standard/schemas/metadataingestion/dashboardservicemetadatapipeline
   - category: Main Concepts / Metadata Standard / Schemas / Metadataingestion / DataInsightPipeline
@@ -1409,10 +1511,24 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/metadataingestion/mlmodelservicemetadatapipeline
   - category: Main Concepts / Metadata Standard / Schemas / Metadataingestion / PipelineServiceMetadataPipeline
     url: /main-concepts/metadata-standard/schemas/metadataingestion/pipelineservicemetadatapipeline
+  - category: Main Concepts / Metadata Standard / Schemas / Metadataingestion / SearchServiceMetadataPipeline
+    url: /main-concepts/metadata-standard/schemas/metadataingestion/searchservicemetadatapipeline
   - category: Main Concepts / Metadata Standard / Schemas / Metadataingestion / Storage / ContainerMetadataConfig
     url: /main-concepts/metadata-standard/schemas/metadataingestion/storage/containermetadataconfig
   - category: Main Concepts / Metadata Standard / Schemas / Metadataingestion / Storage
     url: /main-concepts/metadata-standard/schemas/metadataingestion/storage
+  - category: Main Concepts / Metadata Standard / Schemas / Metadataingestion / Storage / ManifestMetadataConfig
+    url: /main-concepts/metadata-standard/schemas/metadataingestion/storage/manifestmetadataconfig
+  - category: Main Concepts / Metadata Standard / Schemas / Metadataingestion / Storage / StorageBucketDetails
+    url: /main-concepts/metadata-standard/schemas/metadataingestion/storage/storagebucketdetails
+  - category: Main Concepts / Metadata Standard / Schemas / Metadataingestion / Storage / StorageMetadataADLSConfig
+    url: /main-concepts/metadata-standard/schemas/metadataingestion/storage/storagemetadataadlsconfig
+  - category: Main Concepts / Metadata Standard / Schemas / Metadataingestion / Storage / StorageMetadataHttpConfig
+    url: /main-concepts/metadata-standard/schemas/metadataingestion/storage/storagemetadatahttpconfig
+  - category: Main Concepts / Metadata Standard / Schemas / Metadataingestion / Storage / StorageMetadataLocalConfig
+    url: /main-concepts/metadata-standard/schemas/metadataingestion/storage/storagemetadatalocalconfig
+  - category: Main Concepts / Metadata Standard / Schemas / Metadataingestion / Storage / StorageMetadataS3Config
+    url: /main-concepts/metadata-standard/schemas/metadataingestion/storage/storagemetadatas3config
   - category: Main Concepts / Metadata Standard / Schemas / Metadataingestion / StorageServiceMetadataPipeline
     url: /main-concepts/metadata-standard/schemas/metadataingestion/storageservicemetadatapipeline
   - category: Main Concepts / Metadata Standard / Schemas / Metadataingestion / TestSuitePipeline
@@ -1485,6 +1601,12 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/system/eventpublisherjob
   - category: Main Concepts / Metadata Standard / Schemas / System
     url: /main-concepts/metadata-standard/schemas/system
+  - category: Main Concepts / Metadata Standard / Schemas / System / Ui
+    url: /main-concepts/metadata-standard/schemas/system/ui
+  - category: Main Concepts / Metadata Standard / Schemas / System / Ui / KnowledgePanel
+    url: /main-concepts/metadata-standard/schemas/system/ui/knowledgepanel
+  - category: Main Concepts / Metadata Standard / Schemas / System / Ui / Page
+    url: /main-concepts/metadata-standard/schemas/system/ui/page
   - category: Main Concepts / Metadata Standard / Schemas / Tests / Basic
     url: /main-concepts/metadata-standard/schemas/tests/basic
   - category: Main Concepts / Metadata Standard / Schemas / Tests / CustomMetric
@@ -1539,6 +1661,8 @@ site_menu:
     url: /main-concepts/metadata-standard/schemas/type
   - category: Main Concepts / Metadata Standard / Schemas / Type / JdbcConnection
     url: /main-concepts/metadata-standard/schemas/type/jdbcconnection
+  - category: Main Concepts / Metadata Standard / Schemas / Type / LifeCycle
+    url: /main-concepts/metadata-standard/schemas/type/lifecycle
   - category: Main Concepts / Metadata Standard / Schemas / Type / Paging
     url: /main-concepts/metadata-standard/schemas/type/paging
   - category: Main Concepts / Metadata Standard / Schemas / Type / Profile

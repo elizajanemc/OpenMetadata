@@ -217,9 +217,9 @@ public class FeedRepository {
   }
 
   @Transaction
-  public Thread create(Thread thread, ChangeEvent event) {
+  public void create(Thread thread, ChangeEvent event) {
     ThreadContext threadContext = getThreadContext(thread, event);
-    return createThread(threadContext);
+    createThread(threadContext);
   }
 
   @Transaction
@@ -411,6 +411,10 @@ public class FeedRepository {
 
     // Update the thread with the new post
     Thread thread = EntityUtil.validate(id, dao.feedDAO().findById(id), Thread.class);
+
+    // Populate Assignees if type is task
+    populateAssignees(thread);
+
     thread.withUpdatedBy(userName).withUpdatedAt(System.currentTimeMillis());
     FeedUtil.addPost(thread, post);
     dao.feedDAO().update(id, JsonUtils.pojoToJson(thread));

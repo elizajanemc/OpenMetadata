@@ -34,19 +34,18 @@ import { ReactComponent as IconDropdown } from '../../../assets/svg/menu.svg';
 import { ReactComponent as StyleIcon } from '../../../assets/svg/style.svg';
 import { AssetSelectionModal } from '../../../components/Assets/AssetsSelectionModal/AssetSelectionModal';
 import { ManageButtonItemLabel } from '../../../components/common/ManageButtonContentItem/ManageButtonContentItem.component';
-import PageLayoutV1 from '../../../components/containers/PageLayoutV1';
 import { DomainTabs } from '../../../components/Domain/DomainPage.interface';
 import DocumentationTab from '../../../components/Domain/DomainTabs/DocumentationTab/DocumentationTab.component';
 import { DocumentationEntity } from '../../../components/Domain/DomainTabs/DocumentationTab/DocumentationTab.interface';
 import { EntityHeader } from '../../../components/Entity/EntityHeader/EntityHeader.component';
 import EntitySummaryPanel from '../../../components/Explore/EntitySummaryPanel/EntitySummaryPanel.component';
-import { EntityDetailsObjectInterface } from '../../../components/Explore/explore.interface';
 import AssetsTabs, {
   AssetsTabRef,
 } from '../../../components/Glossary/GlossaryTerms/tabs/AssetsTabs.component';
 import { AssetsOfEntity } from '../../../components/Glossary/GlossaryTerms/tabs/AssetsTabs.interface';
 import EntityDeleteModal from '../../../components/Modals/EntityDeleteModal/EntityDeleteModal';
 import EntityNameModal from '../../../components/Modals/EntityNameModal/EntityNameModal.component';
+import PageLayoutV1 from '../../../components/PageLayoutV1/PageLayoutV1';
 import { usePermissionProvider } from '../../../components/PermissionProvider/PermissionProvider';
 import {
   OperationPermission,
@@ -55,8 +54,8 @@ import {
 import TabsLabel from '../../../components/TabsLabel/TabsLabel.component';
 import { DE_ACTIVE_COLOR } from '../../../constants/constants';
 import { EntityField } from '../../../constants/Feeds.constants';
-import { myDataSearchIndex } from '../../../constants/Mydata.constants';
 import { EntityType } from '../../../enums/entity.enum';
+import { SearchIndex } from '../../../enums/search.enum';
 import {
   ChangeDescription,
   DataProduct,
@@ -79,6 +78,7 @@ import {
   getDomainPath,
 } from '../../../utils/RouterUtils';
 import { showErrorToast } from '../../../utils/ToastUtils';
+import { EntityDetailsObjectInterface } from '../../Explore/ExplorePage.interface';
 import StyleModal from '../../Modals/StyleModal/StyleModal.component';
 import './data-products-details-page.less';
 import {
@@ -208,10 +208,10 @@ const DataProductsDetailsPage = ({
           '',
           1,
           0,
-          `(dataProducts.fullyQualifiedName:"${fqn}")`,
+          `(dataProducts.fullyQualifiedName:${fqn})`,
           '',
           '',
-          myDataSearchIndex
+          SearchIndex.ALL
         );
 
         setAssetCount(res.data.hits.total.value ?? 0);
@@ -312,12 +312,11 @@ const DataProductsDetailsPage = ({
 
   const onNameSave = (obj: { name: string; displayName: string }) => {
     if (dataProduct) {
-      const { name, displayName } = obj;
+      const { displayName } = obj;
       let updatedDetails = cloneDeep(dataProduct);
 
       updatedDetails = {
         ...dataProduct,
-        name: name?.trim() || dataProduct.name,
         displayName: displayName?.trim(),
       };
 
@@ -411,12 +410,14 @@ const DataProductsDetailsPage = ({
                   rightPanelWidth={400}>
                   <AssetsTabs
                     assetCount={assetCount}
+                    entityFqn={dataProduct.fullyQualifiedName}
                     isSummaryPanelOpen={false}
                     permissions={dataProductPermission}
                     ref={assetTabRef}
                     type={AssetsOfEntity.DATA_PRODUCT}
                     onAddAsset={() => setAssetModelVisible(true)}
                     onAssetClick={handleAssetClick}
+                    onRemoveAsset={handleAssetSave}
                   />
                 </PageLayoutV1>
               ),
@@ -429,6 +430,7 @@ const DataProductsDetailsPage = ({
     previewAsset,
     dataProduct,
     isVersionsView,
+    handleAssetSave,
     assetCount,
     activeTab,
   ]);
@@ -520,9 +522,11 @@ const DataProductsDetailsPage = ({
                     <Button
                       className="domain-manage-dropdown-button tw-px-1.5"
                       data-testid="manage-button"
-                      onClick={() => setShowActions(true)}>
-                      <IconDropdown className="anticon self-center manage-dropdown-icon" />
-                    </Button>
+                      icon={
+                        <IconDropdown className="vertical-align-inherit manage-dropdown-icon" />
+                      }
+                      onClick={() => setShowActions(true)}
+                    />
                   </Tooltip>
                 </Dropdown>
               )}
@@ -543,10 +547,9 @@ const DataProductsDetailsPage = ({
       </Row>
 
       <EntityNameModal
-        allowRename
         entity={dataProduct}
         title={t('label.edit-entity', {
-          entity: t('label.name'),
+          entity: t('label.display-name'),
         })}
         visible={isNameEditing}
         onCancel={() => setIsNameEditing(false)}
@@ -569,7 +572,8 @@ const DataProductsDetailsPage = ({
         entityFqn={dataProductFqn}
         open={assetModalVisible}
         queryFilter={getQueryFilterToIncludeDomain(
-          dataProduct.domain?.fullyQualifiedName ?? ''
+          dataProduct.domain?.fullyQualifiedName ?? '',
+          dataProduct.fullyQualifiedName ?? ''
         )}
         type={AssetsOfEntity.DATA_PRODUCT}
         onCancel={() => setAssetModelVisible(false)}

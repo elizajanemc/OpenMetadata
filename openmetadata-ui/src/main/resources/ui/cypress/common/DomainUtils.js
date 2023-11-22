@@ -62,14 +62,16 @@ const checkDisplayName = (displayName) => {
     });
 };
 
-const checkName = (name) => {
-  cy.get('[data-testid="entity-header-name"]')
+const checkDataProductsCount = (dataProductsCount) => {
+  cy.get('[data-testid="data_products"] [data-testid="count"]')
     .scrollIntoView()
-    .should('exist')
-    .and('be.visible')
-    .within(() => {
-      cy.contains(name);
-    });
+    .eq(dataProductsCount);
+};
+
+const checkAssetsCount = (assetsCount) => {
+  cy.get('[data-testid="assets"] [data-testid="count"]')
+    .scrollIntoView()
+    .eq(assetsCount);
 };
 
 const updateOwner = (newOwner) => {
@@ -116,7 +118,11 @@ export const updateAssets = (domainObj) => {
   cy.contains('Adding a new Asset is easy, just give it a spin!').should(
     'be.visible'
   );
-  visitEntityDetailsPage(entity.term, entity.serviceName, entity.entity);
+  visitEntityDetailsPage({
+    term: entity.term,
+    serviceName: entity.serviceName,
+    entity: entity.entity,
+  });
 
   cy.get('[data-testid="add-domain"]').click();
 
@@ -157,7 +163,11 @@ export const removeAssets = (domainObj) => {
     .contains(entity.term)
     .click();
 
-  visitEntityDetailsPage(entity.term, entity.serviceName, entity.entity);
+  visitEntityDetailsPage({
+    term: entity.term,
+    serviceName: entity.serviceName,
+    entity: entity.entity,
+  });
 
   cy.get('[data-testid="add-domain"]').click();
   verifyResponseStatusCode('@domains', 200);
@@ -223,7 +233,7 @@ const fillForm = (formObj, type) => {
     .and('be.visible')
     .click();
 
-  cy.get('[data-testid="delete-confirmation-modal"]').should('not.exist');
+  cy.get('[data-testid="delete-modal"]').should('not.exist');
   cy.get('[data-testid="experts-container"]')
     .children()
     .should('have.length', 1);
@@ -269,6 +279,8 @@ export const createDomain = (domainObj, validate) => {
 
     cy.url().should('include', '/domain/');
     checkDisplayName(domainObj.name);
+    checkAssetsCount(0);
+    checkDataProductsCount(0);
   });
 };
 
@@ -276,14 +288,13 @@ export const deleteDomain = (domainObj) => {
   cy.get('.ant-menu-item').contains(domainObj.updatedDisplayName).click();
   cy.get('[data-testid="manage-button"]').click();
   cy.get('[data-testid="delete-button"]').scrollIntoView().click();
-  cy.get('[data-testid="delete-confirmation-modal"]').then(() => {
+  cy.get('[data-testid="delete-modal"]').then(() => {
     cy.get('[role="dialog"]').should('be.visible');
-    cy.get('[data-testid="modal-header"]').should('be.visible');
   });
 
-  cy.get('[data-testid="modal-header"]').should(
+  cy.get('[data-testid="delete-modal"] .ant-modal-title').should(
     'contain',
-    `Delete ${domainObj.updatedName}`
+    `Delete ${domainObj.name}`
   );
 
   cy.get('[data-testid="confirmation-text-input"]').type(DELETE_TERM);
@@ -364,15 +375,13 @@ export const renameDomain = (domainObj) => {
   cy.get('[data-testid="manage-button"]').click();
   cy.get('[data-testid="rename-button-details-container"]').click();
 
-  cy.get('#name').should('not.be.disabled').clear();
+  cy.get('#name').should('be.disabled');
   cy.get('#displayName').should('not.be.disabled').clear();
 
-  cy.get('#name').type(domainObj.updatedName);
   cy.get('#displayName').type(domainObj.updatedDisplayName);
 
   cy.get('[data-testid="save-button"]').click();
   verifyResponseStatusCode('@patchName&DisplayName', 200);
 
-  checkName(domainObj.updatedName);
   checkDisplayName(domainObj.updatedDisplayName);
 };

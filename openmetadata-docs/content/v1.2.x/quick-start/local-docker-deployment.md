@@ -119,15 +119,15 @@ The latest version is at the top of the page
 You can use the curl or wget command as well to fetch the docker compose files from your terminal -
 
 ```commandline
-curl -sL https://github.com/open-metadata/OpenMetadata/releases/download/1.2.0-release/docker-compose.yml
+curl -sL -o docker-compose.yml https://github.com/open-metadata/OpenMetadata/releases/download/1.2.2-release/docker-compose.yml
 
-curl -sL https://github.com/open-metadata/OpenMetadata/releases/download/1.2.0-release/docker-compose-postgres.yml
+curl -sL -o docker-compose-postgres.yml https://github.com/open-metadata/OpenMetadata/releases/download/1.2.2-release/docker-compose-postgres.yml
 ```
 
 ```commandline
-wget -O https://github.com/open-metadata/OpenMetadata/releases/download/1.2.0-release/docker-compose.yml
+wget -O https://github.com/open-metadata/OpenMetadata/releases/download/1.2.2-release/docker-compose.yml
 
-wget -O https://github.com/open-metadata/OpenMetadata/releases/download/1.2.0-release/docker-compose-postgres.yml
+wget -O https://github.com/open-metadata/OpenMetadata/releases/download/1.2.2-release/docker-compose-postgres.yml
 ```
 
 ### 3. Start the Docker Compose Services
@@ -166,10 +166,10 @@ You can validate that all containers are up by running with command `docker ps`.
 ```commandline
 ❯ docker ps
 CONTAINER ID   IMAGE                                                  COMMAND                  CREATED          STATUS                    PORTS                                                            NAMES
-470cc8149826   openmetadata/server:1.2.0                             "./openmetadata-star…"   45 seconds ago   Up 43 seconds             3306/tcp, 9200/tcp, 9300/tcp, 0.0.0.0:8585-8586->8585-8586/tcp   openmetadata_server
-63578aacbff5   openmetadata/ingestion:1.2.0                           "./ingestion_depende…"   45 seconds ago   Up 43 seconds             0.0.0.0:8080->8080/tcp                                           openmetadata_ingestion
+470cc8149826   openmetadata/server:1.2.2                             "./openmetadata-star…"   45 seconds ago   Up 43 seconds             3306/tcp, 9200/tcp, 9300/tcp, 0.0.0.0:8585-8586->8585-8586/tcp   openmetadata_server
+63578aacbff5   openmetadata/ingestion:1.2.2                           "./ingestion_depende…"   45 seconds ago   Up 43 seconds             0.0.0.0:8080->8080/tcp                                           openmetadata_ingestion
 9f5ee8334f4b   docker.elastic.co/elasticsearch/elasticsearch:7.16.3   "/tini -- /usr/local…"   45 seconds ago   Up 44 seconds             0.0.0.0:9200->9200/tcp, 0.0.0.0:9300->9300/tcp                   openmetadata_elasticsearch
-08947ab3424b   openmetadata/db:1.2.0                                  "/entrypoint.sh mysq…"   45 seconds ago   Up 44 seconds (healthy)   3306/tcp, 33060-33061/tcp                                        openmetadata_mysql
+08947ab3424b   openmetadata/db:1.2.2                                  "/entrypoint.sh mysq…"   45 seconds ago   Up 44 seconds (healthy)   3306/tcp, 33060-33061/tcp                                        openmetadata_mysql
 ```
 
 In a few seconds, you should be able to access the OpenMetadata UI at [http://localhost:8585](http://localhost:8585)
@@ -258,3 +258,19 @@ installation.
 2. Visit the [Connectors](/connectors) documentation to see what services you can integrate with
    OpenMetadata.
 3. Visit the [API](/swagger.html) documentation and explore the rich set of OpenMetadata APIs.
+
+
+### Volume Permissions: Operation not permitted
+
+If you are running on Windows (WSL2) and see permissions errors when starting the databases (either MySQL or Postgres), e.g.,
+
+```
+openmetadata_postgresql     | chmod: changing permissions of '/var/lib/postgresql/data': Operation not permitted
+```
+
+You can try to update the `/etc/wsl.conf` file from the WSL2 machine to add:
+
+```
+[automount]
+options = "metadata,case=force"
+```

@@ -17,6 +17,7 @@ import TaskList from '@tiptap/extension-task-list';
 import StarterKit from '@tiptap/starter-kit';
 import { DROP_CURSOR_COLOR } from '../../../constants/BlockEditor.constants';
 import BlockAndDragDrop from './BlockAndDragDrop/BlockAndDragDrop';
+import { Callout } from './Callout/Callout';
 import DiffView from './diff-view';
 import { Focus } from './focus';
 import { Hashtag } from './hashtag';
@@ -96,6 +97,7 @@ export const extensions = [
     HTMLAttributes: {
       class: 'om-task-item',
     },
+    nested: true,
   }),
   Mention.configure({
     suggestion: mentionSuggestion(),
@@ -112,4 +114,5 @@ export const extensions = [
   Focus.configure({
     mode: 'deepest',
   }),
+  Callout,
 ];

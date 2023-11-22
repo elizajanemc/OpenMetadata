@@ -45,14 +45,13 @@ public class DomainRepository extends EntityRepository<Domain> {
   }
 
   @Override
-  public Domain setFields(Domain entity, Fields fields) {
-    return entity.withParent(getParent(entity));
+  public void setFields(Domain entity, Fields fields) {
+    entity.withParent(getParent(entity));
   }
 
   @Override
-  public Domain clearFields(Domain entity, Fields fields) {
+  public void clearFields(Domain entity, Fields fields) {
     entity.withParent(fields.contains("parent") ? entity.getParent() : null);
-    return entity;
   }
 
   @Override
@@ -97,6 +96,7 @@ public class DomainRepository extends EntityRepository<Domain> {
 
   @Override
   public void restorePatchAttributes(Domain original, Domain updated) {
+    super.restorePatchAttributes(original, updated);
     updated.withParent(original.getParent()); // Parent can't be changed
     updated.withChildren(original.getChildren()); // Children can't be changed
   }

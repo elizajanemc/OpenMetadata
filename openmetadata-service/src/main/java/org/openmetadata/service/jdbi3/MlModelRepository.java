@@ -15,10 +15,8 @@ package org.openmetadata.service.jdbi3;
 
 import static org.openmetadata.common.utils.CommonUtil.listOrEmpty;
 import static org.openmetadata.common.utils.CommonUtil.nullOrEmpty;
-import static org.openmetadata.schema.type.Include.ALL;
 import static org.openmetadata.service.Entity.DASHBOARD;
 import static org.openmetadata.service.Entity.MLMODEL;
-import static org.openmetadata.service.Entity.MLMODEL_SERVICE;
 import static org.openmetadata.service.util.EntityUtil.entityReferenceMatch;
 import static org.openmetadata.service.util.EntityUtil.mlFeatureMatch;
 import static org.openmetadata.service.util.EntityUtil.mlHyperParameterMatch;
@@ -84,7 +82,7 @@ public class MlModelRepository extends EntityRepository<MlModel> {
   }
 
   @Override
-  public MlModel setFields(MlModel mlModel, Fields fields) {
+  public void setFields(MlModel mlModel, Fields fields) {
     mlModel.setService(getContainer(mlModel.getId()));
     mlModel.setDashboard(fields.contains("dashboard") ? getDashboard(mlModel) : mlModel.getDashboard());
     if (mlModel.getUsageSummary() == null) {
@@ -93,23 +91,19 @@ public class MlModelRepository extends EntityRepository<MlModel> {
               ? EntityUtil.getLatestUsage(daoCollection.usageDAO(), mlModel.getId())
               : mlModel.getUsageSummary());
     }
-    return mlModel;
   }
 
   @Override
-  public MlModel clearFields(MlModel mlModel, Fields fields) {
+  public void clearFields(MlModel mlModel, Fields fields) {
     mlModel.setDashboard(fields.contains("dashboard") ? mlModel.getDashboard() : null);
-    return mlModel.withUsageSummary(fields.contains("usageSummary") ? mlModel.getUsageSummary() : null);
+    mlModel.withUsageSummary(fields.contains("usageSummary") ? mlModel.getUsageSummary() : null);
   }
 
   @Override
   public void restorePatchAttributes(MlModel original, MlModel updated) {
     // Patch can't make changes to following fields. Ignore the changes
-    updated
-        .withFullyQualifiedName(original.getFullyQualifiedName())
-        .withService(original.getService())
-        .withName(original.getName())
-        .withId(original.getId());
+    super.restorePatchAttributes(original, updated);
+    updated.withService(original.getService());
   }
 
   private void setMlFeatureSourcesFQN(List<MlFeatureSource> mlSources) {
@@ -190,13 +184,6 @@ public class MlModelRepository extends EntityRepository<MlModel> {
     }
 
     setMlFeatureSourcesLineage(mlModel);
-  }
-
-  @Override
-  public MlModel setInheritedFields(MlModel mlModel, Fields fields) {
-    // If mlModel does not have domain, then inherit it from parent MLModel service
-    MlModelService service = Entity.getEntity(MLMODEL_SERVICE, mlModel.getService().getId(), "domain", ALL);
-    return inheritDomain(mlModel, fields, service);
   }
 
   /**

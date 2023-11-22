@@ -18,11 +18,12 @@ import { Glossary } from '../../../../generated/entity/data/glossary';
 import { GlossaryTerm } from '../../../../generated/entity/data/glossaryTerm';
 import { ChangeDescription } from '../../../../generated/entity/type';
 import { TagLabel } from '../../../../generated/type/tagLabel';
+import { getEntityName } from '../../../../utils/EntityUtils';
 import {
   getEntityVersionByField,
   getEntityVersionTags,
 } from '../../../../utils/EntityVersionUtils';
-import DescriptionV1 from '../../../common/description/DescriptionV1';
+import DescriptionV1 from '../../../common/EntityDescription/DescriptionV1';
 import { OperationPermission } from '../../../PermissionProvider/PermissionProvider.interface';
 import TagsInput from '../../../TagsInput/TagsInput.component';
 import GlossaryDetailsRightPanel from '../../GlossaryDetailsRightPanel/GlossaryDetailsRightPanel.component';
@@ -109,7 +110,7 @@ const GlossaryOverviewTab = ({
           <Col span={24}>
             <DescriptionV1
               description={glossaryDescription}
-              entityName={selectedData?.displayName ?? selectedData?.name}
+              entityName={getEntityName(selectedData)}
               entityType={EntityType.GLOSSARY}
               hasEditAccess={permissions.EditDescription || permissions.EditAll}
               isEdit={isDescriptionEditable}
